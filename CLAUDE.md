@@ -47,8 +47,8 @@
 ## 코드 구조 (`index.html`의 `<script>`)
 
 1. **데이터 저장소**: `blank()` 상태 모양, `Store.load/save`, 전역 `S`(`S.cid` 기기 id, `S.me.code/joined`, `S.sync` 보낸 값 기억).
-   연결 계층: `Net.rpc`(Supabase RPC fetch), `RT`(Realtime Broadcast 채널 `class-코드`), `Sync`(바뀐 항목만 `submit_response`),
-   `Live`(`class_summary` 집계), `Teacher`(`teacher_data`, PIN 은 sessionStorage), `Entry`(입장 상태).
+   연결 계층: `Net.rpc`(Supabase RPC fetch), `RT`(Realtime Broadcast 채널 `ud-class-코드`), `Sync`(바뀐 항목만 `ud_submit_response`),
+   `Live`(`ud_class_summary` 집계), `Teacher`(`ud_teacher_data`, PIN 은 sessionStorage), `Entry`(입장 상태).
 2. **수업 내용**: `M1`, `M2`, `CHECKS`, `APPLE`, `SORT`, `QTYPE`, `KWS` 등. 예시 학급 데이터는 `VOTE_SEED`, `KW_SEED`, `BOARD`, `NEWQ_SEED`, `WISH_SEED`, `DONE_SEED`, `GROUP_SEED`, 각 `M2[].seed`.
 3. **도구**: `esc`, `inp(path)`(data-bind로 `S`에 자동 저장), `chip`, `bars`, `done[n]()`(5는 답변 배지), `m3score`,
    **`CD()`**: 반 전체 결과를 한 모양으로 돌려준다(연결 모드=서버 집계, 연습 모드=예시+나). 화면은 seed 를 직접 쓰지 말고 `CD()`를 쓴다.
@@ -58,14 +58,15 @@
 5. **동작**: `A` 객체의 함수들이 `data-act` 클릭을 처리하고 `render()`를 다시 부른다. 클릭 뒤 `Sync.schedule()`.
 
 서버에 보내는 항목(`mission:item`): `0:progress`, `1:cards|vote|newq`, `2:posts|pledge|newq`, `3:kw|practice|sum`, `4:sort|q1~q4|newq|wish`.
-새 항목을 만들면 `Sync.items()`, 필요하면 `schema.sql`의 `class_summary`, 교사 화면의 `ITEM`/`itemText`에 함께 넣는다.
+새 항목을 만들면 `Sync.items()`, 필요하면 `schema.sql`의 `ud_class_summary`, 교사 화면의 `ITEM`/`itemText`에 함께 넣는다.
 
 ## 한 일 (2026-11-11)
 
-- Supabase 연결 준비: `schema.sql`(테이블 `classes`, `responses`, `board_answers`, `board_likes` + RLS + RPC). 설계와 다른 점:
+- Supabase 연결 준비: `schema.sql`(테이블 `ud_classes`, `ud_responses`, `ud_board_answers`, `ud_board_likes` + RLS + RPC). 설계와 다른 점:
+  - Supabase 무료 프로젝트 하나를 다른 앱(`mg_`, `calc_`, `history_` 등)과 함께 쓰므로 테이블·함수·실시간 채널 이름을 모두 `ud_` 로 시작한다. 새로 만들 때도 지킨다.
   - 기기마다 임의의 `client_id`를 두어 같은 별명끼리 섞이지 않게 했다.
   - RLS 정책을 열지 않고 모든 접근을 security definer 함수로만 한다(익명은 테이블 직접 접근 불가).
-  - 교사 원문 보기는 학급 PIN(`classes.teacher_pin_hash`)으로 막았다. 교사 실시간은 Broadcast 신호 + 15초 다시 불러오기.
+  - 교사 원문 보기는 학급 PIN(`ud_classes.teacher_pin_hash`)으로 막았다. 교사 실시간은 Broadcast 신호 + 15초 다시 불러오기.
 - 학급 코드 입장(첫 화면), `?class=코드` 로 들어오면 자동 채움, 교사 화면에 입장 QR.
 - 교사 화면: 실제 숫자 기반 지도 조언, 1차시 까닭 모아 보기, 3차시 연습 결과, 학생별 진행표, CSV 내려받기(엑셀용 BOM, 수식 주입 방지).
 - 건의함 반영(예시 건의 두 개): 「답변 탐정」 배지(친구 질문에 3번 답하기), 모둠 점수판(해결 10점, 답 3점, 받은 도장 2점).

@@ -9,7 +9,9 @@ export async function openDb() {
   await db.exec(`do $$ begin
     if not exists (select 1 from pg_roles where rolname='anon') then create role anon nologin; end if;
     if not exists (select 1 from pg_roles where rolname='authenticated') then create role authenticated nologin; end if;
-  end $$; grant usage on schema public to anon, authenticated;`);
+  end $$; grant usage on schema public to anon, authenticated;
+    -- Supabase 처럼 pgcrypto 를 extensions 스키마에 둔다(search_path 실수를 잡기 위해)
+    create schema if not exists extensions; create extension if not exists pgcrypto schema extensions;`);
   const sql = await readFile(new URL('../supabase/schema.sql', import.meta.url), 'utf8');
   await db.exec(sql);
   return db;

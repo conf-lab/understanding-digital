@@ -1,123 +1,148 @@
-# Supabase 연결 방법
+# Supabase 연결 방법 (다른 앱과 한 프로젝트를 함께 쓰는 경우)
 
-코드는 이미 Supabase를 쓸 수 있게 만들어 두었습니다. 아래 순서대로 **Supabase 프로젝트를 만들고, SQL 한 번 실행하고, 주소와 키 두 개를 넣으면** 연결이 끝납니다.
-연결 전까지 앱은 지금처럼 "연습 모드"(이 기기에만 저장, 반 결과는 예시 데이터)로 동작합니다.
+이 앱은 **이미 다른 앱(`mg_`, `calc_`, `history_` 등)이 쓰고 있는 Supabase 무료 프로젝트에 같이 들어가도록** 만들었습니다.
+
+- 이 앱이 만드는 테이블과 함수는 모두 **`ud_`** 로 시작합니다(understanding-digital).
+- 설치 SQL은 `ud_` 로 시작하는 것만 만들거나 바꿉니다. 다른 앱의 테이블, 함수, 데이터는 건드리지 않습니다.
+- 새 프로젝트를 만들 필요가 없습니다. 지금 프로젝트의 **URL과 anon 키를 그대로** 씁니다.
+
+연결 전까지 앱은 "연습 모드"(이 기기에만 저장, 반 결과는 예시 데이터)로 동작합니다.
 
 ---
 
-## 1. Supabase 프로젝트 만들기
+## 0단계. 설치 전 확인: `ud_` 이름이 비어 있는지
 
-1. <https://supabase.com> 에 로그인하고 **New project**를 누릅니다.
-2. 이름(예: `info-detective`), 데이터베이스 비밀번호, 지역(**Northeast Asia (Seoul)** 추천)을 정하고 만듭니다. 1~2분 걸립니다.
-
-## 2. 테이블과 함수 만들기 (SQL 한 번 실행)
-
-1. 왼쪽 메뉴 **SQL Editor** → **New query**.
-2. 저장소의 [`supabase/schema.sql`](supabase/schema.sql) 내용을 **전부** 복사해 붙여 넣고 **Run**.
-   - 오류 없이 `Success. No rows returned` 가 나오면 됩니다.
-   - 여러 번 실행해도 안전합니다(나중에 schema.sql 이 바뀌면 다시 Run).
-
-이 SQL이 만드는 것:
-
-| 이름 | 하는 일 |
-|---|---|
-| `classes` | 학급 코드, 반 이름, 선생님 PIN(암호화해서 저장) |
-| `responses` | 학생 응답. `(class_code, group_no, nickname, mission, item, value jsonb)` + 기기 구분용 `client_id` |
-| `board_answers` | 질문 게시판 답 |
-| `board_likes` | 좋은 질문 도장 |
-| `submit_response`, `remove_response` | 학생 응답 저장/지우기 |
-| `submit_answer`, `toggle_like` | 게시판 답하기, 도장 찍기 |
-| `join_class` | 학급 코드가 있는지 확인 |
-| `class_summary` | 학급 **집계**(투표 수, 판정 수, 핵심 낱말 수, 게시판, 모둠 점수) |
-| `teacher_data` | 학급 코드 + PIN 이 맞으면 학생 글 원문까지 돌려줌(교사 화면, CSV) |
-| `create_class` | 학급 만들기(SQL Editor 에서만 실행 가능) |
-
-**보안(RLS)**: 네 테이블 모두 RLS 가 켜져 있고 익명 사용자용 정책이 없습니다. 즉 익명 키로는 테이블을 직접 읽거나 쓸 수 없고, 위 함수로만
-"자기 학급 코드로 쓰기"와 "자기 학급의 집계 읽기"를 할 수 있습니다. 다른 학생의 글 원문(다짐, 까닭 등)은 학생에게 내려가지 않고, PIN 을 아는 교사만 봅니다.
-(질문 게시판 질문과 답은 반 전체에 공개하는 활동이므로 집계에 원문이 포함됩니다.)
-
-## 3. 학급 만들기
-
-SQL Editor 에서 반마다 한 번 실행합니다. 코드는 영문·숫자·`-` 3~20자, PIN 은 4자리 이상.
+1. Supabase 대시보드에서 지금 쓰는 프로젝트를 엽니다.
+2. 왼쪽 메뉴 **SQL Editor** → **New query**를 누릅니다.
+3. 아래를 붙여 넣고 **Run**을 누릅니다.
 
 ```sql
-select create_class('5-3', '5학년 3반', '2580');
+select 'table' as kind, table_name as name from information_schema.tables
+ where table_schema = 'public' and table_name like 'ud\_%'
+union all
+select 'function', proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+ where n.nspname = 'public' and proname like 'ud\_%';
 ```
 
-- 학급 코드(`5-3`)는 학생에게 알려 주는 값입니다. 짐작하기 어렵게 `5-3-KIM` 처럼 만들어도 좋습니다.
-- PIN(`2580`)은 선생님 화면에 들어갈 때만 씁니다. 같은 코드로 다시 실행하면 이름과 PIN 이 바뀝니다.
-- 수업이 끝난 뒤 학급 자료를 지우려면: `delete from classes where code = '5-3';` (응답·답·도장이 함께 지워짐)
+- **결과가 0줄**(No rows returned)이면 다음 단계로 갑니다.
+- 무언가 나오면, 그 이름을 다른 앱이 쓰고 있는지 먼저 확인하세요. 잘 모르겠으면 멈추고 물어보세요.
 
-## 4. 주소와 키 확인
+## 1단계. 테이블과 함수 설치
 
-**Project Settings → API**(또는 **Data API / API Keys**)에서 두 값을 복사합니다.
+1. SQL Editor에서 **New query**를 하나 더 엽니다.
+2. 깃허브 저장소의 [`supabase/schema.sql`](supabase/schema.sql) 파일을 엽니다. 깃허브에서 **Raw** 버튼을 누르면 복사하기 쉽습니다.
+3. 내용 **전부**를 복사해 붙여 넣고 **Run**을 누릅니다.
+4. `Success. No rows returned`가 나오면 성공입니다.
+   - 여러 번 실행해도 안전합니다. 나중에 `schema.sql`이 바뀌면 같은 방법으로 다시 Run 하면 됩니다.
+   - "potential issue" 같은 확인 창이 뜨면 **Run this query**를 누르세요(테이블을 만드는 SQL이라 뜨는 확인입니다).
 
-| 값 | 어디에 쓰나 |
+### 설치 확인
+0단계 SQL을 다시 Run 합니다. **15줄**이 나와야 합니다.
+
+| 종류 | 이름 |
 |---|---|
-| **Project URL** (예: `https://abcd1234.supabase.co`) | `SUPABASE_URL` |
-| **anon public** 키 (`eyJ...`) 또는 **publishable** 키 (`sb_publishable_...`) | `SUPABASE_ANON_KEY` |
+| 테이블 4개 | `ud_classes`, `ud_responses`, `ud_board_answers`, `ud_board_likes` |
+| 함수 11개 | `ud_create_class`, `ud_join_class`, `ud_submit_response`, `ud_remove_response`, `ud_submit_answer`, `ud_toggle_like`, `ud_class_summary`, `ud_teacher_data`, `ud_clean`, `ud_class_ok`, `ud_who` |
 
-> ⚠️ `service_role` 키나 `sb_secret_...` 키는 **절대** 넣지 마세요. 빌드 스크립트가 이런 키를 발견하면 빌드를 멈춥니다.
-> anon/publishable 키는 브라우저에 공개되어도 되는 키입니다. 위의 RLS 와 함수 권한이 데이터를 지킵니다.
+왼쪽 **Table Editor** 목록에도 `ud_` 테이블 4개가 새로 보입니다. 이 테이블들은 **RLS가 켜져 있고 정책이 없는 것이 정상**입니다. 학생 앱은 테이블을 직접 읽지 않고 위 함수로만 접근하기 때문입니다. 그러니 Supabase가 "RLS enabled, no policies"라고 알려도 정책을 추가하지 마세요.
 
-## 5. 앱에 연결하기
+## 2단계. 학급 만들기
 
-### 내 컴퓨터에서 시험할 때
+SQL Editor에서 반마다 한 번 실행합니다.
 
-저장소 최상위에 `config.js` 파일을 만듭니다(이 파일은 `.gitignore` 에 들어 있어 깃허브에 올라가지 않습니다).
+```sql
+select ud_create_class('5-3-KIM', '5학년 3반', '2580');
+```
+
+| 값 | 뜻 | 규칙 |
+|---|---|---|
+| `5-3-KIM` | **학급 코드**. 학생에게 알려 주는 값입니다(QR에도 들어감) | 영문·숫자·`-`, 3~20자. 대소문자 구분 없음. 남이 짐작하기 어렵게 |
+| `5학년 3반` | 화면에 보이는 반 이름 | 자유 |
+| `2580` | **선생님 PIN**. 선생님 화면에 들어갈 때만 씁니다 | 4자리 이상. 암호화되어 저장됨 |
+
+- 결과로 `5-3-KIM`이 한 줄 나오면 성공입니다.
+- 같은 코드로 다시 실행하면 반 이름과 PIN이 바뀝니다(학생 기록은 그대로).
+- 만든 학급 목록 보기: `select code, name, created_at from ud_classes;`
+
+## 3단계. URL과 키 확인 (다른 앱과 같은 값)
+
+다른 앱에서 이미 쓰고 있는 값과 **같은 값**입니다. 그 앱의 설정(예: Vercel 환경 변수)에서 가져와도 되고, 대시보드에서 확인해도 됩니다.
+
+1. 왼쪽 아래 톱니바퀴 **Project Settings**를 누릅니다.
+2. **Data API**(또는 API)에서 **Project URL**을 복사합니다. 예: `https://abcd1234.supabase.co`
+3. **API Keys**에서 **anon public** 키(`eyJ...`) 또는 **publishable** 키(`sb_publishable_...`)를 복사합니다.
+
+> ⚠️ **`service_role` 키나 `sb_secret_...` 키는 절대 넣지 마세요.** 이 키는 RLS를 무시하므로 다른 앱 데이터까지 모두 열립니다.
+> 빌드 스크립트는 이런 키를 발견하면 빌드를 멈춥니다. anon/publishable 키는 브라우저에 공개되어도 괜찮은 키입니다.
+
+## 4단계. Vercel에 넣기
+
+Vercel 프로젝트(understanding-digital) → **Settings → Environment Variables**에 두 개를 넣습니다. 이름을 정확히 이렇게 써야 합니다.
+
+| Key | Value |
+|---|---|
+| `SUPABASE_URL` | 3단계의 Project URL |
+| `SUPABASE_ANON_KEY` | 3단계의 anon 또는 publishable 키 |
+
+- Environment는 **Production, Preview, Development** 모두 체크하면 됩니다.
+- **이미 배포했다면** 환경 변수를 넣은 뒤 **Deployments → 맨 위 배포 ⋯ → Redeploy**를 눌러야 반영됩니다. 환경 변수는 빌드할 때 `config.js`로 들어가기 때문입니다.
+- 빌드 설정(`npm run build`, 출력 폴더 `dist`)은 `vercel.json`에 이미 있습니다. Framework Preset은 **Other**로 두세요.
+
+### (선택) 내 컴퓨터에서만 시험할 때
+저장소 최상위에 `config.js`를 만듭니다. `.gitignore`에 들어 있어 깃허브에 올라가지 않습니다.
 
 ```js
-window.APP_CONFIG = {
-  supabaseUrl: 'https://abcd1234.supabase.co',
-  supabaseAnonKey: '여기에 anon 또는 publishable 키'
-};
+window.APP_CONFIG = { supabaseUrl: 'https://abcd1234.supabase.co', supabaseAnonKey: '여기에 anon 키' };
 ```
-
-그리고 아무 정적 서버로 엽니다(파일을 더블클릭해 `file://` 로 열면 QR·복사 기능이 제한될 수 있습니다).
 
 ```bash
 npx http-server@14.1.1 . -p 5174 -c-1
 ```
 
-### Vercel 에 배포할 때 (배포는 따로 진행)
+## 5단계. 실시간 확인
 
-Vercel 프로젝트 **Settings → Environment Variables** 에 두 값을 넣습니다.
+- 학생이 저장하면 Realtime Broadcast 채널 `ud-class-학급코드`로 신호를 보내고, 교사 화면이 바로 다시 불러옵니다. 채널 이름도 `ud-`로 시작하므로 다른 앱과 섞이지 않습니다.
+- 따로 설정할 것은 보통 없습니다. **Project Settings → Realtime**에 "Allow public access"(공개 채널 허용) 같은 설정이 꺼져 있으면 켜 주세요.
+  다른 앱이 비공개 채널만 쓰도록 이 설정을 꺼 둔 상태라면, 켜지 않아도 됩니다. 이 앱은 실시간이 안 되어도 15초마다 다시 불러오기 때문입니다.
 
+## 6단계. 연결 확인 (수업 전에 꼭)
+
+1. 선생님 기기에서 배포 주소 뒤에 `#teacher`를 붙여 엽니다 → 학급 코드와 PIN을 넣고 **우리 반 불러오기**를 누릅니다. 학생 입장 QR이 보이면 성공입니다.
+2. 휴대폰으로 그 QR을 찍습니다 → 모둠·별명을 쓰고 **입장하기**를 누릅니다. 위쪽 상태 딱지가 **저장됨**이 되면 서버에 저장된 것입니다.
+3. 휴대폰에서 1차시 투표를 합니다 → 몇 초 안에 교사 화면 막대가 바뀌면 실시간까지 성공입니다.
+4. 교사 화면 **CSV 내려받기** → 엑셀에서 한글이 깨지지 않으면 끝입니다.
+5. 시험한 기록 지우기(학급은 남기고 응답만 삭제):
+
+```sql
+delete from ud_responses where class_code = '5-3-KIM';
 ```
-SUPABASE_URL       = https://abcd1234.supabase.co
-SUPABASE_ANON_KEY  = (anon 또는 publishable 키)
-```
 
-`vercel.json` 이 빌드 명령(`npm run build`)과 출력 폴더(`dist`)를 이미 정해 두었습니다. 빌드 때 [`scripts/build.mjs`](scripts/build.mjs) 가 환경 변수로 `dist/config.js` 를 만듭니다.
-환경 변수가 없으면 연습 모드로 빌드됩니다.
+## 무료 요금제에서 알아 둘 것
 
-## 6. 실시간(교사 화면 자동 갱신)
+- **용량**: 이 앱은 한 반 4차시를 다 해도 데이터가 아주 작습니다(수백 KB 수준). 다른 앱과 함께 써도 무료 한도(DB 500MB)에 거의 영향이 없습니다.
+- **일시 정지**: 무료 프로젝트는 한동안(약 1주) 아무도 쓰지 않으면 멈춥니다. 다른 앱이 꾸준히 쓰면 괜찮지만, 방학 뒤 첫 수업 전날에는 대시보드에서 프로젝트가 **Active**인지 확인하고, 멈춰 있으면 **Restore**를 누르세요. 다시 켜지는 데 몇 분 걸립니다.
+- **백업**: 무료 요금제는 자동 백업을 내려받을 수 없습니다. 사례 발표 자료는 수업이 끝날 때마다 교사 화면에서 **CSV 내려받기**로 따로 남겨 두세요.
 
-- 학생이 저장하면 같은 학급의 Realtime **Broadcast** 채널(`class-학급코드`)로 "바뀜" 신호를 보내고, 교사 화면과 다른 학생 화면이 집계를 다시 불러옵니다.
-- Supabase 새 프로젝트는 Realtime 이 기본으로 켜져 있어 따로 설정할 것이 없습니다. (**Project Settings → Realtime** 에서 "Allow public access"/공개 채널이 꺼져 있다면 켜 주세요.)
-- 실시간이 막혀도 앱이 15초마다 다시 불러오므로 수업은 진행됩니다.
+## 정리하기
 
-## 7. 연결 확인 순서
-
-1. 선생님 기기에서 `#teacher` → 학급 코드와 PIN 입력 → "우리 반 불러오기". 학생 입장 QR이 보이면 성공.
-2. 학생 기기로 QR을 찍거나 `https://(주소)/?class=5-3` 로 들어가 모둠·별명을 쓰고 **입장하기**.
-   머리의 상태 딱지가 「저장됨」으로 바뀌면 서버에 저장된 것입니다.
-3. 학생이 1차시 투표를 하면 몇 초 안에 교사 화면의 막대가 바뀝니다.
-4. 교사 화면에서 **CSV 내려받기** → 엑셀에서 한글이 깨지지 않고 열리면 끝.
+- 한 반만 지우기(그 반의 응답·답·도장도 함께 지워짐): `delete from ud_classes where code = '5-3-KIM';`
+- 이 앱 전체를 지우기: [`supabase/uninstall.sql`](supabase/uninstall.sql)을 Run 합니다. `ud_`로 시작하는 것만 지우고 다른 앱은 그대로 둡니다.
 
 ## 문제 해결
 
 | 증상 | 확인할 것 |
 |---|---|
-| 학생 화면에 「그런 학급 코드가 없어요」 | 3단계 `create_class` 를 실행했는지, 코드 철자 |
-| 머리에 「연결이 끊겼어요」 | `SUPABASE_URL`/키 오타, 2단계 SQL 실행 여부. 브라우저 개발자 도구 Network 탭에서 `/rest/v1/rpc/...` 응답을 확인 |
-| `permission denied for function ...` | 2단계 SQL 을 다시 Run(맨 아래 grant 부분이 실행되어야 함) |
-| 교사 화면이 자동으로 안 바뀜 | 6단계 Realtime 설정. 「지금 새로 고침」 버튼으로도 갱신됨 |
-| Supabase 무료 프로젝트가 일시 정지됨 | 무료 요금제는 오래 쓰지 않으면 멈춥니다. 수업 전날 대시보드에서 **Restore** |
+| 학생 화면에 「그런 학급 코드가 없어요」 | 2단계를 했는지, 코드 철자(`select code from ud_classes;`) |
+| 위쪽에 「연결이 끊겼어요」 | Vercel 환경 변수 이름·값 오타, 넣은 뒤 Redeploy 했는지, 1단계 설치 여부 |
+| `function ud_... does not exist` | 1단계 `schema.sql`을 끝까지 Run 했는지 |
+| `permission denied for function ...` | 1단계를 다시 Run(맨 아래 grant 부분이 실행되어야 함) |
+| `function gen_salt(unknown) does not exist` | 예전 schema.sql입니다. 최신 파일로 1단계를 다시 Run |
+| 교사 화면이 자동으로 안 바뀜 | 5단계 Realtime 설정. 「지금 새로 고침」 버튼과 15초 자동 갱신은 항상 동작 |
+| 브라우저 개발자 도구에서 원인 보기 | F12 → Network 탭 → `rpc/ud_...` 요청의 응답 내용 |
 
-## 로컬에서 Supabase 없이 연결 모드 시험하기
+## (개발자용) Supabase 없이 로컬에서 시험하기
 
-Supabase 프로젝트를 만들기 전에도 연결 모드를 시험할 수 있습니다. `schema.sql` 을 웹어셈블리 Postgres(PGlite)에 그대로 올려 Supabase RPC 를 흉내 냅니다.
+`schema.sql`을 웹어셈블리 Postgres(PGlite)에 그대로 올려 Supabase를 흉내 냅니다. Supabase처럼 `pgcrypto`를 `extensions` 스키마에 둡니다.
 
 ```bash
 npm install
@@ -131,4 +156,4 @@ npm run test:sql
 npm run dev
 ```
 
-`npm run dev` 후 <http://localhost:5173/?class=DEMO-5> (교사 PIN `1234`). 이 개발 서버는 실시간 신호는 흉내 내지 않고 4초마다 다시 불러옵니다. 서버를 끄면 데이터는 사라집니다.
+`npm run dev`를 실행한 뒤 <http://localhost:5173/?class=DEMO-5>를 엽니다(교사 PIN `1234`). 실시간은 흉내 내지 않고 4초마다 다시 불러옵니다.
