@@ -12,7 +12,7 @@ import { openDb, rpc } from './db.mjs';
 const PORT = Number(process.env.PORT || 5173);
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const db = await openDb();
-await db.query(`select create_class('DEMO-5','5학년 시험 반','1234')`);
+await db.query(`select ud_create_class('DEMO-5','5학년 시험 반','1234')`);
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png' };
 const send = (res, code, body, type = 'application/json') => { res.writeHead(code, { 'content-type': type, 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' }); res.end(body) };

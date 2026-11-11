@@ -224,7 +224,7 @@ td .dot.on{background:var(--mint-d)}
 /* ============ 데이터 저장소 ============
    연결 모드: config.js 에 Supabase 주소와 anon key 가 있으면, 학급 코드로 반 친구들의 결과를 모은다.
      · 내 입력은 먼저 이 기기(localStorage)에 저장하고, Sync 가 바뀐 항목만 골라 RPC 로 보낸다.
-     · 반 친구들 결과는 Live 가 class_summary(집계)로 불러온다. 교사 화면은 Teacher 가 teacher_data 로 불러온다.
+     · 반 친구들 결과는 Live 가 ud_class_summary(집계)로 불러온다. 교사 화면은 Teacher 가 ud_teacher_data 로 불러온다.
    연습 모드: config.js 가 없으면 이 기기에만 저장하고, 반 친구들 결과는 예시 데이터로 보여 준다. */
 const KEY='info-detective-v1';
 const CFG=window.APP_CONFIG||null;
@@ -265,7 +265,7 @@ const RT={sb:null,ch:null,code:'',
  async connect(code){if(!ONLINE||CFG.realtime===false||!code||this.code===code)return;this.code=code;
   try{if(!window.supabase)await loadScript(SUPA_JS);this.sb=this.sb||window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey);
    if(this.ch)this.sb.removeChannel(this.ch);
-   this.ch=this.sb.channel('class-'+code,{config:{broadcast:{self:false}}}).on('broadcast',{event:'changed'},()=>{Live.refresh();Teacher.refresh()}).subscribe()}catch(e){this.code=''}},
+   this.ch=this.sb.channel('ud-class-'+code,{config:{broadcast:{self:false}}}).on('broadcast',{event:'changed'},()=>{Live.refresh();Teacher.refresh()}).subscribe()}catch(e){this.code=''}},
  ping(){try{this.ch&&this.ch.send({type:'broadcast',event:'changed',payload:{}})}catch(e){}}
 };
 
@@ -294,8 +294,8 @@ const Sync={t:null,busy:false,again:false,
    const sig=x.value==null?null:JSON.stringify([S.me.group.trim(),S.me.name.trim(),x.value]);
    if(sig===sent[k]||(sig===null&&!(k in sent)))continue;
    if(!changed)Net.show('saving');
-   try{if(sig===null){await Net.rpc('remove_response',{p_code:code,p_client:S.cid,p_mission:x.m,p_item:x.item});delete sent[k]}
-    else{await Net.rpc('submit_response',{p_code:code,p_client:S.cid,p_group:S.me.group.trim(),p_nick:S.me.name.trim(),p_mission:x.m,p_item:x.item,p_value:x.value});sent[k]=sig}
+   try{if(sig===null){await Net.rpc('ud_remove_response',{p_code:code,p_client:S.cid,p_mission:x.m,p_item:x.item});delete sent[k]}
+    else{await Net.rpc('ud_submit_response',{p_code:code,p_client:S.cid,p_group:S.me.group.trim(),p_nick:S.me.name.trim(),p_mission:x.m,p_item:x.item,p_value:x.value});sent[k]=sig}
     changed=true}
    catch(e){err=true;if(/unknown class/.test(e.message)){S.me.joined='';Entry.msg='학급 코드를 찾을 수 없어요. 선생님께 다시 여쭤보세요.';softRender()}break}}
   Store.save();this.busy=false;
@@ -308,7 +308,7 @@ const Sync={t:null,busy:false,again:false,
 const Live={sum:null,last:0,rt:null,
  async refresh(force){const code=S.me.joined;if(!ONLINE||!code)return;
   const now=Date.now();if(!force&&now-this.last<2500){clearTimeout(this.rt);this.rt=setTimeout(()=>this.refresh(true),2500-(now-this.last));return}this.last=now;
-  try{const s=await Net.rpc('class_summary',{p_code:code,p_client:S.cid});
+  try{const s=await Net.rpc('ud_class_summary',{p_code:code,p_client:S.cid});
    if(s&&s.ok){if(s.code===S.me.joined){this.sum=s;softRender()}}else{S.me.joined='';Store.save();softRender()}}
   catch(e){Net.show('off')}}
 };
@@ -321,13 +321,13 @@ const TKEY='info-detective-teacher';
 const Teacher={data:null,code:'',pin:'',msg:'',
  init(){try{const t=JSON.parse(sessionStorage.getItem(TKEY));if(t&&t.code){this.code=t.code;this.pin=t.pin}}catch(e){}},
  async login(code,pin){code=String(code||'').trim().toUpperCase();this.msg='';
-  try{const d=await Net.rpc('teacher_data',{p_code:code,p_pin:pin});
+  try{const d=await Net.rpc('ud_teacher_data',{p_code:code,p_pin:pin});
    if(d&&d.ok){this.code=code;this.pin=pin;this.data=d;try{sessionStorage.setItem(TKEY,JSON.stringify({code,pin}))}catch(e){}RT.connect(code)}
    else this.msg='학급 코드나 PIN 이 맞지 않습니다.'}
   catch(e){this.msg='서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.'}
   softRender()},
  async refresh(){if(!ONLINE||!this.pin)return;
-  try{const d=await Net.rpc('teacher_data',{p_code:this.code,p_pin:this.pin});if(d&&d.ok){this.data=d;softRender()}}catch(e){Net.show('off')}},
+  try{const d=await Net.rpc('ud_teacher_data',{p_code:this.code,p_pin:this.pin});if(d&&d.ok){this.data=d;softRender()}}catch(e){Net.show('off')}},
  logout(){this.data=null;this.pin='';this.code='';try{sessionStorage.removeItem(TKEY)}catch(e){}}
 };
 Teacher.init();
@@ -720,7 +720,7 @@ const eul=w=>{const c=w.charCodeAt(w.length-1)-0xAC00;return c>=0&&c<11172&&c%28
 const pct=t=>Math.round(t.trusted/Math.max(1,t.judged)*100)+'%';
 const byGroup=(a,b)=>String(a.group||'').localeCompare(String(b.group||''),'ko',{numeric:true})||String(a.nick).localeCompare(String(b.nick),'ko');
 
-/* 선생님 화면 자료. 연결 모드는 teacher_data, 연습 모드는 예시 데이터 + 이 기기 입력 */
+/* 선생님 화면 자료. 연결 모드는 ud_teacher_data, 연습 모드는 예시 데이터 + 이 기기 입력 */
 function TD(){
  if(ONLINE){const t=Teacher.data;if(!t)return null;const s=t.summary;
   const rows=t.rows.map(r=>({...r,who:r.group?r.group+'모둠 '+r.nick:r.nick}));
@@ -785,7 +785,7 @@ function teacherLogin(){return `
  <div class="grid"><label class="f" for="t-code">학급 코드<input type="text" id="t-code" autocapitalize="characters" autocomplete="off" value="${esc(Teacher.code||S.me.code)}"></label>
   <label class="f" for="t-pin">선생님 PIN<input type="password" id="t-pin" inputmode="numeric" autocomplete="off"></label></div>
  <button class="btn" data-act="tlogin">우리 반 불러오기</button>${Teacher.msg?`<p class="entry bad">${esc(Teacher.msg)}</p>`:''}
- <p class="muted">학급은 Supabase SQL Editor에서 <b>select create_class('코드', '반 이름', 'PIN');</b> 으로 만듭니다.</p>
+ <p class="muted">학급은 Supabase SQL Editor에서 <b>select ud_create_class('코드', '반 이름', 'PIN');</b> 으로 만듭니다.</p>
 </section>`}
 
 V.teacher=()=>{
@@ -864,7 +864,7 @@ const A={
   if(!code){Entry.msg='학급 코드를 써 주세요.';softRender();return}
   if(!S.me.name.trim()){Entry.msg='탐정 이름(별명)을 써 주세요.';softRender();return}
   Entry.busy=true;Entry.msg='';render();
-  try{const r=await Net.rpc('join_class',{p_code:code});
+  try{const r=await Net.rpc('ud_join_class',{p_code:code});
    if(r&&r.ok){S.me.code=r.code;S.me.joined=r.code;S.me.cls=r.name||'';Store.save();RT.connect(r.code);Sync.schedule(0);Live.refresh(true)}
    else{S.me.joined='';Entry.msg='그런 학급 코드가 없어요. 선생님께 다시 여쭤보세요.'}}
   catch(e){Entry.msg='인터넷 연결을 확인하고 다시 눌러 주세요.'}
@@ -889,13 +889,13 @@ const A={
   if(!isLive()){const i=S.m4.likes.indexOf(d.b);i<0?S.m4.likes.push(d.b):S.m4.likes.splice(i,1);return}
   if(!Sync.ready())return false;
   const b=liveBoard(d.b);if(b){b.liked=!b.liked;b.likes+=b.liked?1:-1}
-  Net.rpc('toggle_like',{p_code:S.me.joined,p_client:S.cid,p_nick:myName(),p_question:d.b}).then(()=>{RT.ping();Live.refresh(true)},()=>{Net.show('off');Live.refresh(true)})},
+  Net.rpc('ud_toggle_like',{p_code:S.me.joined,p_client:S.cid,p_nick:myName(),p_question:d.b}).then(()=>{RT.ping();Live.refresh(true)},()=>{Net.show('off');Live.refresh(true)})},
  m4ans(d){const a=S.m4.answers[d.b];if(!a||!a.text||!a.text.trim())return false;
   if(!isLive()){a.sent=true;return}
   if(!Sync.ready())return false;
   const text=a.text.trim(),b=liveBoard(d.b);if(b){b.ans=b.ans.filter(x=>!x.mine).concat([{by:myName(),text,mine:true}]);Live.sum.my_answers=Live.sum.board.filter(x=>x.ans.some(y=>y.mine)).length}
   a.sent=true;a.text='';Net.show('saving');
-  Net.rpc('submit_answer',{p_code:S.me.joined,p_client:S.cid,p_nick:myName(),p_question:d.b,p_text:text}).then(()=>{Net.show('ok');RT.ping();Live.refresh(true)},()=>{Net.show('off');Live.refresh(true)})},
+  Net.rpc('ud_submit_answer',{p_code:S.me.joined,p_client:S.cid,p_nick:myName(),p_question:d.b,p_text:text}).then(()=>{Net.show('ok');RT.ping();Live.refresh(true)},()=>{Net.show('off');Live.refresh(true)})},
  tlogin(){const c=document.getElementById('t-code'),p=document.getElementById('t-pin');if(!c.value.trim()||!p.value){Teacher.msg='학급 코드와 PIN을 모두 넣어 주세요.';return}
   Teacher.login(c.value,p.value);return false},
  tlogout(){Teacher.logout()},
