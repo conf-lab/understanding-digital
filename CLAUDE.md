@@ -5,9 +5,13 @@
 
 ## 현재 상태
 
-- `index.html` 한 파일로 된 프로토타입. 빌드 도구 없음. 브라우저에서 바로 열린다.
-- **연습 모드**: 학생 입력은 `localStorage`(키 `info-detective-v1`)에만 저장되고, 반 친구들 결과는 코드 안의 예시 데이터(24명)다.
-- 화면은 주소의 해시로 나뉜다: `#home`, `#mission-1` ~ `#mission-4`, `#teacher`.
+- 앱은 여전히 `index.html` 한 파일. 브라우저에서 바로 열린다. 화면은 주소의 해시로 나뉜다: `#home`, `#mission-1` ~ `#mission-4`, `#teacher`.
+- 모드는 `config.js`(`window.APP_CONFIG = {supabaseUrl, supabaseAnonKey}`)가 있느냐로 정해진다.
+  - **연습 모드**(config 없음): 학생 입력은 `localStorage`(키 `info-detective-v1`)에만, 반 친구들 결과는 예시 데이터(24명)에 「예시 데이터」 표시.
+  - **연결 모드**(config 있음): 학급 코드로 입장하고, 입력은 Supabase RPC 로 저장, 반 결과는 학급 집계로 바뀐다. 연결 방법은 `SUPABASE.md`.
+- 파일: `supabase/schema.sql`(테이블·RLS·RPC), `scripts/build.mjs`(환경 변수 → `dist/config.js`), `vercel.json`,
+  `dev/server.mjs`(PGlite 로 Supabase RPC 를 흉내 내는 개발 서버, `npm run dev`), `dev/test-sql.mjs`(`npm run test:sql`).
+- Supabase 프로젝트 생성·키 입력과 Vercel 배포는 아직 하지 않았다.
 
 ## 4차시 구성
 
@@ -42,26 +46,40 @@
 
 ## 코드 구조 (`index.html`의 `<script>`)
 
-1. **데이터 저장소**: `blank()` 상태 모양, `Store.load/save`, 전역 `S`.
-2. **수업 내용**: `M1`, `M2`, `CHECKS`, `APPLE`, `SORT`, `QTYPE`, `KWS` 등. 예시 학급 데이터는 `VOTE_SEED`, `KW_SEED`, `BOARD`, `NEWQ_SEED`, `WISH_SEED`, `DONE_SEED`, 각 `M2[].seed`.
-3. **도구**: `esc`, `inp(path)`(data-bind로 `S`에 자동 저장), `chip`, `bars`, `done[n]()`.
-4. **그림과 화면**: `mascot`, `ICON`, `V.home / m1 / m2 / m3 / m4 / teacher`가 HTML 문자열을 돌려준다.
-5. **동작**: `A` 객체의 함수들이 `data-act` 클릭을 처리하고 `render()`를 다시 부른다.
+1. **데이터 저장소**: `blank()` 상태 모양, `Store.load/save`, 전역 `S`(`S.cid` 기기 id, `S.me.code/joined`, `S.sync` 보낸 값 기억).
+   연결 계층: `Net.rpc`(Supabase RPC fetch), `RT`(Realtime Broadcast 채널 `class-코드`), `Sync`(바뀐 항목만 `submit_response`),
+   `Live`(`class_summary` 집계), `Teacher`(`teacher_data`, PIN 은 sessionStorage), `Entry`(입장 상태).
+2. **수업 내용**: `M1`, `M2`, `CHECKS`, `APPLE`, `SORT`, `QTYPE`, `KWS` 등. 예시 학급 데이터는 `VOTE_SEED`, `KW_SEED`, `BOARD`, `NEWQ_SEED`, `WISH_SEED`, `DONE_SEED`, `GROUP_SEED`, 각 `M2[].seed`.
+3. **도구**: `esc`, `inp(path)`(data-bind로 `S`에 자동 저장), `chip`, `bars`, `done[n]()`(5는 답변 배지), `m3score`,
+   **`CD()`**: 반 전체 결과를 한 모양으로 돌려준다(연결 모드=서버 집계, 연습 모드=예시+나). 화면은 seed 를 직접 쓰지 말고 `CD()`를 쓴다.
+   `dtag(d)`: 「예시 데이터 + 나」/「우리 반 n명」 딱지. `softRender()`: 입력 중이면 다시 그리기를 미룬다.
+4. **그림과 화면**: `mascot`, `ICON`(5는 답변 탐정), `V.home / m1 / m2 / m3 / m4 / teacher`.
+   교사 화면은 `TD()`(교사용 자료), `advice(td)`(실제 숫자로 만드는 지도 조언), `csvText(td)`, `fillQR()`.
+5. **동작**: `A` 객체의 함수들이 `data-act` 클릭을 처리하고 `render()`를 다시 부른다. 클릭 뒤 `Sync.schedule()`.
+
+서버에 보내는 항목(`mission:item`): `0:progress`, `1:cards|vote|newq`, `2:posts|pledge|newq`, `3:kw|practice|sum`, `4:sort|q1~q4|newq|wish`.
+새 항목을 만들면 `Sync.items()`, 필요하면 `schema.sql`의 `class_summary`, 교사 화면의 `ITEM`/`itemText`에 함께 넣는다.
+
+## 한 일 (2026-11-11)
+
+- Supabase 연결 준비: `schema.sql`(테이블 `classes`, `responses`, `board_answers`, `board_likes` + RLS + RPC). 설계와 다른 점:
+  - 기기마다 임의의 `client_id`를 두어 같은 별명끼리 섞이지 않게 했다.
+  - RLS 정책을 열지 않고 모든 접근을 security definer 함수로만 한다(익명은 테이블 직접 접근 불가).
+  - 교사 원문 보기는 학급 PIN(`classes.teacher_pin_hash`)으로 막았다. 교사 실시간은 Broadcast 신호 + 15초 다시 불러오기.
+- 학급 코드 입장(첫 화면), `?class=코드` 로 들어오면 자동 채움, 교사 화면에 입장 QR.
+- 교사 화면: 실제 숫자 기반 지도 조언, 1차시 까닭 모아 보기, 3차시 연습 결과, 학생별 진행표, CSV 내려받기(엑셀용 BOM, 수식 주입 방지).
+- 건의함 반영(예시 건의 두 개): 「답변 탐정」 배지(친구 질문에 3번 답하기), 모둠 점수판(해결 10점, 답 3점, 받은 도장 2점).
+- 빌드: `npm run build` → `dist/`(index.html + config.js). `vercel.json` 준비.
 
 ## 다음 할 일
 
-1. **Supabase 연결**
-   - 테이블 `responses(id, class_code, group_no, nickname, mission, item, value jsonb, created_at)`
-   - 테이블 `board_answers(id, class_code, question_id, nickname, text, created_at)`, `board_likes(question_id, class_code, nickname)`
-   - `Store`를 Supabase 호출로 바꾸고, 예시 데이터(`*_SEED`, `BOARD`)를 학급 코드별 집계 조회로 바꾼다.
-   - 교사 화면은 실시간 구독으로 갱신한다.
-   - RLS: 익명은 자기 학급 코드로 쓰기와 집계 읽기만 가능하게 한다.
-2. **학급 코드 입장**: 첫 화면에서 학급 코드 + 모둠 + 별명. QR로 들어오면 코드가 채워진다.
-3. **Vercel 배포**: 정적 사이트로 배포. Supabase URL과 anon key는 환경 변수로 넣는다.
-4. **교사 화면 보강**: 지금 있는 지도 조언 문구는 예시 숫자에 맞춰 쓴 것이므로 실제 데이터 기준으로 바꾼다. CSV 내려받기 추가.
-5. **건의함 반영**: 학생 건의를 다음 차시 전에 기능으로 넣는다(사례 발표의 핵심 장면).
-6. 기기 환경(1인 1기기인지 모둠당 1기기인지)이 정해지면 개인/모둠 입력 방식을 맞춘다.
+1. **Supabase 프로젝트 만들고 연결**: `SUPABASE.md` 순서대로.
+2. **Vercel 배포**: 환경 변수 `SUPABASE_URL`, `SUPABASE_ANON_KEY`. 실제 Supabase 에서 Realtime Broadcast 를 확인한다(로컬 개발 서버는 실시간을 흉내 내지 않는다).
+3. **건의함 반영**: 실제 학생 건의가 들어오면 다음 차시 전에 넣는다. 「내가 본 진짜 게시물도 올려서 판별」 건의는 아직 반영하지 않았다(학생이 올리는 글을 교사가 먼저 확인하는 흐름이 필요).
+4. 기기 환경(1인 1기기인지 모둠당 1기기인지)이 정해지면 개인/모둠 입력 방식을 맞춘다. 지금은 1인 1기기 기준이고, 기기를 돌려 쓰면 첫 화면 「이 기기 기록 지우기」로 사람을 바꾼다.
 
 ## 확인 방법
 
-`index.html`을 브라우저로 열어 네 차시를 끝까지 눌러 보고, `#teacher`에서 입력이 반영되는지 본다. 태블릿 너비(약 800px)와 휴대폰 너비(약 400px)에서 가로 스크롤이 생기지 않아야 한다.
+- 연습 모드: `index.html`을 브라우저로 열어 네 차시를 끝까지 눌러 보고, `#teacher`에서 입력이 반영되는지 본다.
+- 연결 모드: `npm install` 후 `npm run test:sql`(SQL 함수·권한 테스트), `npm run dev` → `http://localhost:5173/?class=DEMO-5`, 교사 PIN `1234`.
+- 태블릿 너비(약 800px)와 휴대폰 너비(약 400px)에서 가로 스크롤이 생기지 않아야 한다.

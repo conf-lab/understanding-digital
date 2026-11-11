@@ -1,0 +1,13 @@
+{
+  "name": "info-detective",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node dev/server.mjs",
+    "test:sql": "node dev/test-sql.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.3.16"
+  }
+}
