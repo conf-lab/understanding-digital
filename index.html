@@ -203,6 +203,87 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .reasons p{font-family:var(--hand);font-size:19px;line-height:1.4;background:var(--paper);border-radius:10px;padding:2px 10px}
 td .dot{display:inline-block;width:22px;height:22px;border-radius:50%;border:2px solid var(--ink);vertical-align:middle}
 td .dot.on{background:var(--mint-d)}
+
+/* 질문 수사판: 탐정 수사판(크라프트지) 위에 질문 쪽지를 압정으로 꽂고 끈으로 잇는다 */
+main.wide{max-width:1500px}
+body.present .top{display:none}
+body.present main{padding-top:18px}
+.present-bar{display:flex;flex-direction:column;gap:14px}
+.present-bar h1{margin-top:6px}
+.fsteps{gap:8px}
+.fdot{font-family:var(--display);font-size:16px;color:var(--ink);border:2.5px solid var(--ink);background:var(--white);border-radius:999px;padding:3px 14px 3px 4px;display:inline-flex;gap:8px;align-items:center;cursor:pointer}
+.fdot b{font-weight:400;width:26px;height:26px;border-radius:50%;background:var(--paper);border:2px solid var(--ink);display:inline-flex;align-items:center;justify-content:center}
+.fdot.done b{background:var(--lav-d);color:var(--white)}
+.fdot.now{background:var(--lav)}
+@media (max-width:760px){.fdot{padding-right:4px}.fdot span{display:none}}
+.btn[disabled]{opacity:.4;cursor:default;transform:none;box-shadow:0 5px 0 var(--ink)}
+.flow-wrap{position:relative;container-type:inline-size;border:3px solid var(--ink);border-radius:26px;padding:24px 20px 28px 52px;
+  background-color:#F7E9CC;background-image:radial-gradient(rgba(120,80,30,.14) 1.2px,transparent 1.5px),radial-gradient(rgba(120,80,30,.08) 1px,transparent 1.3px);
+  background-size:22px 22px,13px 13px;background-position:0 0,7px 9px;box-shadow:inset 0 0 0 6px rgba(255,255,255,.35)}
+.flow-svg{position:absolute;left:0;top:0;overflow:visible;pointer-events:none;z-index:0}
+.flow-cols{position:relative;z-index:1;display:grid;grid-template-columns:minmax(130px,1fr) minmax(250px,2.3fr) minmax(130px,1fr) minmax(120px,.8fr);gap:30px;align-items:start}
+.fcol{display:flex;flex-direction:column;gap:18px;min-width:0}
+.fcol-big{align-self:stretch}
+.fcol-big .bigq{margin:auto 0}
+.fhead{display:flex;gap:8px;align-items:center;min-width:0}
+.fhead .fstep{font-family:var(--display);width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--white);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.fhead b{display:block;font-family:var(--display);font-weight:400;font-size:19px;line-height:1.2}
+.fhead small{display:block;font-size:13px;color:var(--muted);line-height:1.3}
+.fhead2,.lane{display:grid;grid-template-columns:minmax(104px,.42fr) 1fr;gap:24px;align-items:center}
+.lane-notes{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;min-width:0}
+.lane-notes .fnote{flex:1 1 150px;max-width:240px}
+.fnode{font:inherit;color:var(--ink);text-align:left;cursor:pointer;margin:0}
+.fnote{position:relative;display:flex;flex-direction:column;gap:5px;padding:16px 12px 10px;background:var(--white);border:2px solid rgba(58,47,75,.6);border-radius:4px;box-shadow:3px 5px 0 rgba(58,47,75,.16);min-width:0}
+.fnote::before{content:"";position:absolute;top:-8px;left:50%;margin-left:-7px;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FF9C94,#D93A33 62%);border:1.5px solid var(--ink)}
+.fstack{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:18px 16px;align-items:start}
+.fstack .fnote:nth-child(odd),.lane-notes .fnote:nth-child(odd){transform:rotate(-.7deg)}
+.fstack .fnote:nth-child(even),.lane-notes .fnote:nth-child(even){transform:rotate(.6deg)}
+.flow-fit{position:relative}
+.k-n1{background:var(--sky)} .k-n2{background:var(--peach)} .k-t{background:var(--lemon)} .k-n4{background:var(--mint)}
+.fq{font-family:var(--hand);font-weight:700;font-size:18px;line-height:1.3;overflow-wrap:anywhere}
+.fby{font-size:13px;color:var(--muted);line-height:1.35}
+.ftag{align-self:flex-start;font-family:var(--display);font-size:12.5px;line-height:1.5;background:var(--white);border:1.5px solid var(--ink);border-radius:999px;padding:0 8px}
+.fmeta{display:flex;gap:6px;flex-wrap:wrap;font-family:var(--display);font-size:12.5px}
+.fmeta span{border-radius:999px;padding:0 8px;background:rgba(255,255,255,.75)}
+.fmeta .fl{color:var(--red)}
+.fnote .stamp{position:absolute;right:-12px;bottom:-14px;background:rgba(255,255,255,.85)}
+.hub{position:relative;font-family:var(--display);font-size:calc(17px + var(--hs,0) * 9px);line-height:1.2;background:var(--white);border:3px solid var(--ink);border-radius:18px;padding:8px 12px;box-shadow:0 5px 0 var(--mint-d);display:flex;flex-direction:column;align-items:flex-start;min-width:0;overflow-wrap:anywhere}
+.hub small{font-family:var(--body);font-size:12.5px;color:var(--muted)}
+.bigq{display:flex;flex-direction:column;gap:10px;background:var(--lav);border:3px solid var(--ink);border-radius:24px;padding:18px 16px;box-shadow:0 7px 0 var(--lav-d)}
+.bigq .bq{font-family:var(--display);font-size:22px;line-height:1.35}
+.bigq .label{align-self:flex-start;font-size:14px;padding:4px 10px}
+.fmore{font-family:var(--display);font-size:14px;color:var(--muted);background:rgba(255,255,255,.65);border-radius:999px;padding:2px 10px;align-self:center}
+.fempty{font-size:14.5px;color:var(--muted)}
+.flow-wrap .hide{visibility:hidden}
+.flow-wrap.focus .fnode:not(.on){opacity:.2}
+.fnode.on{outline:3px solid var(--red);outline-offset:3px}
+.e{fill:none;stroke-linecap:round}
+.e-j{stroke:#D93A33;stroke-width:2.4;opacity:.72}
+.e-k{stroke:#3A2F4B;stroke-width:1.6;stroke-dasharray:3 6;opacity:.45}
+.e-b{stroke:#E5A800;stroke-width:3.4;opacity:.85}
+.e.hi{opacity:1;stroke-width:3.6}
+.e.dim{opacity:.06}
+.pin{fill:#D93A33;stroke:#3A2F4B;stroke-width:1.2}
+.pin.dim{opacity:.1}
+.flegend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14.5px;color:var(--muted);align-items:center}
+.lg{display:inline-block;width:30px;height:0;border-top:3px solid #D93A33;vertical-align:middle;margin-right:6px}
+.lg.k{border-top:2px dashed var(--ink)} .lg.b{border-top:4px solid #E5A800}
+.ftools{gap:8px}
+.flow-wrap.present .fq{font-size:20px}
+.flow-wrap.present .bigq .bq{font-size:28px}
+@container (min-width:1100px){.flow-cols{gap:56px}}
+@container (max-width:1000px){
+  .flow-cols{grid-template-columns:minmax(120px,1fr) minmax(230px,2.2fr) minmax(120px,1fr) minmax(130px,.9fr);gap:26px}
+  .fq{font-size:16px} .fnote{padding:14px 9px 8px} .fby{font-size:12px}
+  .bigq{padding:14px 12px} .bigq .bq{font-size:17px} .hub{font-size:calc(15px + var(--hs,0) * 5px);padding:6px 9px}
+  .fhead b{font-size:17px} .fhead2,.lane{gap:16px;grid-template-columns:minmax(92px,.42fr) 1fr}
+  .fhead2 .fhead small{display:none}
+}
+@container (max-width:760px){
+  .flow-cols{grid-template-columns:1fr;gap:34px}
+  .fhead2,.lane{grid-template-columns:1fr;gap:12px}
+  .lane-notes .fnote{max-width:none}
+}
 </style>
 </head>
 <body>
@@ -393,12 +474,23 @@ const BOARD=[
  {id:'b5',by:'4모둠 지호',kw:'식량 문제',t:4,q:'쌀을 대신할 수 있는 곡식이 있을까?',likes:8,ans:[]},
  {id:'b6',by:'6모둠 예준',kw:'광합성',t:2,q:'너무 더운 날에는 다른 식물도 광합성이 잘 안 될까?',likes:3,ans:[]}
 ];
+// 예시 학생마다 1·2·4차시 새로운 질문을 두어, 연습 모드에서도 질문 수사판의 「질문 여정」이 보이게 한다
 const NEWQ_SEED=[
  {by:'2모둠 유나',q:'인공 지능이 알려 준 정보도 사실인지 확인해야 할까?',m:2},
  {by:'1모둠 서연',q:'누리 소통망에서 본 영상의 출처는 어떻게 확인할 수 있을까?',m:1},
  {by:'5모둠 민준',q:'기후 변화로 먹거리가 부족해지면 우리의 건강한 삶은 어떻게 달라질까?',m:4},
- {by:'3모둠 하늘',q:'가짜 뉴스를 만든 사람은 왜 그런 글을 쓸까?',m:2}
+ {by:'3모둠 하늘',q:'가짜 뉴스를 만든 사람은 왜 그런 글을 쓸까?',m:2},
+ {by:'2모둠 유나',q:'사진이 붙어 있으면 더 믿을 만한 정보일까?',m:1},
+ {by:'2모둠 유나',q:'비가 불규칙하게 오면 우리 학교 텃밭은 어떻게 될까?',m:4},
+ {by:'3모둠 하늘',q:'공식 계정인지는 어떻게 알아볼 수 있을까?',m:1},
+ {by:'3모둠 하늘',q:'우리 동네 논도 바닷물 때문에 위험해질까?',m:4},
+ {by:'1모둠 서연',q:'쌀값이 오르면 우리 가족 밥상은 어떻게 달라질까?',m:4},
+ {by:'4모둠 지호',q:'날짜가 없는 정보는 믿으면 안 될까?',m:1},
+ {by:'4모둠 지호',q:'쌀 말고 다른 음식도 기후 변화의 영향을 받을까?',m:4},
+ {by:'5모둠 민준',q:'광고인지 아닌지는 어떻게 알아볼 수 있을까?',m:2},
+ {by:'6모둠 예준',q:'많이 공유된 글은 왜 사실처럼 느껴질까?',m:2}
 ];
+const BIGQ='좋은 질문은 우리들의 삶을 더 좋게 만들까요?'; // 4차시 대질문(교과서 27쪽)
 const WISH_SEED=['친구 질문에 답하면 배지를 주면 좋겠어요','우리 모둠 점수판이 있으면 좋겠어요','내가 본 진짜 게시물도 올려서 판별하고 싶어요'];
 const DONE_SEED={1:23,2:21,3:18,4:15};
 const GROUP_SEED=[{group:'1',members:4,solved:14,answers:6,stamps:9},{group:'2',members:4,solved:13,answers:4,stamps:6},{group:'3',members:4,solved:12,answers:7,stamps:8},
@@ -692,7 +784,7 @@ ${banner(4,'질문 공장','탐구 질문과 새로운 질문의 차이를 알�
 </section>
 <section class="card">
  ${sec(4,'새로운 질문 · 교과서 27쪽')}<h2>대질문과 이어지는 나만의 질문</h2>
- <p class="muted">대질문: 좋은 질문은 우리들의 삶을 더 좋게 만들까요? 6쪽의 「건강한 삶」을 떠올려 보세요.</p>
+ <p class="muted">대질문: ${BIGQ} 6쪽의 「건강한 삶」을 떠올려 보세요.</p>
  ${inp('m4.newq','잘못된 정보 때문에 불안해지지 않으려면 어떤 태도가 필요할까?')}
 </section>
 <section class="card tape" style="--c:var(--lav)">
@@ -809,6 +901,10 @@ V.teacher=()=>{
 ${td.live?`<section class="card"><h2>학생 입장 QR</h2><div class="qr"><div class="code" id="qr" role="img" aria-label="학생 입장 주소 QR 코드"></div>
  <div class="url"><p class="muted">학급 코드</p><p class="big-code">${esc(td.code)}</p><p class="muted" style="margin-top:8px">${esc(joinUrl(td.code))}</p>
  <p class="muted">QR로 들어오면 학급 코드가 채워집니다. 학생은 모둠과 별명만 쓰고 「입장하기」를 누르면 됩니다.</p></div></div></section>`:''}
+<section class="card tape t4"><div class="row"><h2>질문 수사판</h2>${td.live?tag:'<span class="demo">예시 데이터</span>'}</div>
+ <p class="muted">학생들의 질문이 차시를 따라 어떻게 이어졌는지 수사판에 꽂아 보여 줍니다. 사례 발표에서는 「발표 모드」로 한 단계씩 펼쳐 보이세요.</p>
+ ${flowTools(false)}${flowSay(flowModel(td),false)}${flowMap(td,false)}${flowLegend}
+</section>
 <section class="grid">
  <div class="card t1"><h3>1차시 · 가장 중요한 것은?</h3>${bars(votes)}<p class="advice">${adv[1]}</p></div>
  <div class="card t2"><h3>2차시 · 게시물을 믿은 학생</h3>${bars(M2.map((p,i)=>{const t=td.trust[p.id]||{trusted:0,judged:0};return {label:(i+1)+'번 '+(p.trust?'(사실)':'(허위)'),n:t.trusted,unit:'명'}}),Math.max(1,td.n))}
@@ -837,6 +933,159 @@ ${td.live?`<section class="card"><h2>학생별 진행</h2>${td.students.length?`
  <div class="row"><span class="tag new">반영함</span><span>친구 질문에 답하면 배지 → 「답변 탐정」 배지(답 ${ANSWER_GOAL}번)</span></div>
  <div class="row"><span class="tag new">반영함</span><span>우리 모둠 점수판 → 첫 화면과 선생님 화면의 「모둠 점수판」</span></div>
  ${td.wishes.length?`<div class="notes">${td.wishes.map((w,i)=>`<div class="note n${i%4+1}"><p class="qq">${esc(w.text)}</p><span class="by">${esc(w.by)}</span></div>`).join('')}</div>`:'<p class="muted">아직 들어온 건의가 없습니다.</p>'}</section>`};
+
+/* ---- 질문 수사판: 학생들의 질문이 차시를 따라 이어진 흐름 (선생님 화면 + 발표 모드 #flow) ----
+   단계: 1 출발한 궁금증(1·2차시 새로운 질문) → 2 핵심 낱말 → 3 탐구 질문(4차시) → 4 넓혀 간 질문(4차시 새로운 질문) → 5 대질문
+   끈:   빨강 = 같은 학생의 질문 여정 / 점선 = 같은 핵심 낱말에서 나온 탐구 질문 / 노랑 = 대질문으로 모이는 질문
+   쪽지는 HTML 로 배치하고, 끈은 그려진 쪽지 위치를 재어 SVG 곡선으로 잇는다(drawFlow). */
+const FKEY='info-detective-flow';
+const FlowUI={step:5,focus:null,tour:-1,anon:false,all:false,fit:true};
+try{const p=JSON.parse(localStorage.getItem(FKEY));if(p){FlowUI.anon=!!p.anon;FlowUI.all=!!p.all;if(p.fit===false)FlowUI.fit=false}}catch(e){}
+const saveFlowPrefs=()=>{try{localStorage.setItem(FKEY,JSON.stringify({anon:FlowUI.anon,all:FlowUI.all,fit:FlowUI.fit}))}catch(e){}};
+const FSTEPS=[null,{name:'출발한 궁금증',sub:'1·2차시 새로운 질문'},{name:'핵심 낱말',sub:'3차시 · 질문의 재료'},{name:'탐구 질문',sub:'4차시'},
+ {name:'넓혀 간 질문',sub:'4차시 새로운 질문'},{name:'대질문',sub:'교과서 27쪽'}];
+const FORDER={n1:1,n2:2,t:3,n4:4}, FSTEP={n1:1,n2:1,t:3,n4:4}, FLIMIT=8;
+const fwho=by=>{if(!FlowUI.anon)return by;const g=String(by||'').match(/^\d+모둠/);return (g?g[0]+' ':'')+'친구'};
+const clip=(s,n)=>{s=String(s||'').trim();return s.length>n?s.slice(0,n-1)+'…':s};
+let FLOW=null; // 마지막으로 그린 수사판 모델(끈 그리기에 쓴다)
+
+function flowModel(td){
+ const nodes=[];
+ td.newqs.forEach((x,i)=>{const text=String(x.q||'').trim();if(!text)return;const kind=x.m==4?'n4':x.m==2?'n2':'n1';nodes.push({id:kind+'_'+i,kind,by:x.by,text})});
+ td.board.forEach(b=>nodes.push({id:'t_'+b.id,kind:'t',by:b.by,text:b.q,kw:b.kw||'기타',t:b.t,likes:b.likes||0,ans:(b.ans||[]).length}));
+ const st={};nodes.forEach(n=>{const s=st[n.by]=st[n.by]||{by:n.by,nodes:[],kinds:new Set(),likes:0};s.nodes.push(n);s.kinds.add(n.kind);s.likes+=n.likes||0});
+ // 질문 여정이 긴(여러 단계에 질문을 남긴) 학생부터
+ const students=Object.values(st).sort((a,b)=>b.kinds.size-a.kinds.size||b.likes-a.likes||b.nodes.length-a.nodes.length||String(a.by).localeCompare(String(b.by),'ko',{numeric:true}));
+ const keep=new Set((FlowUI.all?students:students.slice(0,FLIMIT)).map(s=>s.by));
+ const ts=nodes.filter(n=>n.kind==='t');
+ const top=ts.filter(n=>n.likes>0).sort((a,b)=>b.likes-a.likes).slice(0,3);
+ const shown=nodes.filter(n=>keep.has(n.by)||top.includes(n)),shownSet=new Set(shown);
+ const kwCount={};ts.forEach(n=>kwCount[n.kw]=(kwCount[n.kw]||0)+1);
+ const kws=Object.keys(kwCount).sort((a,b)=>kwCount[b]-kwCount[a]||a.localeCompare(b,'ko'));
+ const edges=[];
+ students.forEach(s=>{if(!keep.has(s.by))return;
+  const groups=[1,2,3,4].map(o=>s.nodes.filter(n=>shownSet.has(n)&&FORDER[n.kind]===o)).filter(g=>g.length);
+  for(let i=0;i+1<groups.length;i++)groups[i].forEach(a=>groups[i+1].forEach(b=>edges.push({a:a.id,b:b.id,k:'j'})))});
+ shown.forEach(n=>{if(n.kind==='t')edges.push({a:'h_'+n.kw,b:n.id,k:'k'});if(n.kind==='n4')edges.push({a:n.id,b:'big',k:'b'})});
+ const rank={};students.forEach((s,i)=>rank[s.by]=i);
+ return {rank,nodes,shown,kws,kwCount,edges,best:top.length?top[0].id:null,hidden:nodes.length-shown.length,
+  tour:students.filter(s=>keep.has(s.by)&&s.kinds.size>=2).map(s=>s.by),
+  stat:{start:nodes.filter(n=>n.kind==='n1'||n.kind==='n2').length,t:ts.length,n4:nodes.filter(n=>n.kind==='n4').length,
+   ans:ts.reduce((s,n)=>s+n.ans,0),likes:ts.reduce((s,n)=>s+n.likes,0),kw:kws.length,people:students.length}};
+}
+// 강조: 학생 하나(질문 여정) 또는 핵심 낱말 하나
+function flowLit(fm){const f=FlowUI.focus;if(!f)return null;const on=new Set();
+ if(f.k==='by')fm.shown.filter(n=>n.by===f.v).forEach(n=>{on.add(n.id);if(n.kind==='t')on.add('h_'+n.kw);if(n.kind==='n4')on.add('big')});
+ else{on.add('h_'+f.v);fm.shown.filter(n=>n.kind==='t'&&n.kw===f.v).forEach(n=>on.add(n.id))}
+ return on}
+// 보기의 해설: 강조 중이면 그 흐름을, 발표 모드면 지금 단계를 설명한다
+function flowSay(fm,present){const f=FlowUI.focus,s=fm.stat;
+ if(f&&f.k==='by'){const mine=k=>fm.nodes.filter(n=>n.by===f.v&&n.kind===k),q=(n,len)=>'「'+esc(clip(n.text,len))+'」',bits=[];
+  if(mine('n1').length)bits.push('1차시 '+q(mine('n1')[0],22));
+  if(mine('n2').length)bits.push('2차시 '+q(mine('n2')[0],22));
+  const t=mine('t');if(t.length)bits.push(`탐구 질문 ${t.length}개 ${q(t[0],20)}${t.length>1?' 등':''}`);
+  if(mine('n4').length)bits.push('새로운 질문 '+q(mine('n4')[0],24));
+  return say('wow',`<b>${esc(fwho(f.v))}</b>의 질문 여정: ${bits.join(' → ')}`,'good')}
+ if(f){const t=fm.nodes.filter(n=>n.kind==='t'&&n.kw===f.v),ty=[1,2,3,4].filter(x=>t.some(n=>n.t===x));
+  return say('think',`핵심 낱말 <b>「${esc(f.v)}」</b>에서 탐구 질문 ${t.length}개가 나왔어.${ty.length?' '+ty.map(x=>x+'유형').join('·')+' 질문이 있어.':''}`)}
+ if(!present)return '';
+ return say(FlowUI.step===5?'wow':'smile',{
+  1:`1·2차시에 정보를 확인하면서 첫 궁금증 <b>${s.start}개</b>가 생겼어. 질문은 여기서 출발해.`,
+  2:`3차시에는 글에서 <b>핵심 낱말</b>을 찾았어. 핵심 낱말은 질문의 재료야. 우리 반은 낱말 <b>${s.kw}개</b>로 질문을 만들었어.`,
+  3:`4차시에 핵심 낱말로 <b>탐구 질문 ${s.t}개</b>를 만들고, 친구 질문에 답 <b>${s.ans}개</b>와 좋은 질문 도장 <b>${s.likes}개</b>를 주고받았어.`,
+  4:`탐구 질문은 나의 삶으로 생각을 넓힌 <b>새로운 질문 ${s.n4}개</b>로 이어졌어. 빨간 끈은 한 친구의 질문이 자라 온 길이야.`,
+  5:`그리고 모든 질문은 대질문 <b>「${BIGQ}」</b>로 모여.`}[FlowUI.step])}
+
+function flowMap(td,present){
+ const fm=FLOW=flowModel(td),on=flowLit(fm),step=present?FlowUI.step:5;
+ const vis=s=>s<=step?'':' hide',lit=id=>on&&on.has(id)?' on':'';
+ const note=n=>`<button type="button" class="fnode fnote k-${n.kind}${vis(FSTEP[n.kind])}${lit(n.id)}" data-fid="${esc(n.id)}" data-act="flowfocus" data-k="by" data-v="${esc(n.by)}">
+   ${n.kind==='t'?`<span class="ftag">${n.t}유형</span>`:n.kind==='n4'?'':`<span class="ftag">${n.kind==='n1'?1:2}차시</span>`}
+   <span class="fq">${esc(clip(n.text,70))}</span><span class="fby">${esc(fwho(n.by))}${n.kind==='t'?` · 「${esc(n.kw)}」`:''}</span>
+   ${n.kind==='t'&&(n.likes||n.ans)?`<span class="fmeta">${n.likes?`<span class="fl">도장 ${n.likes}</span>`:''}${n.ans?`<span>답 ${n.ans}</span>`:''}</span>`:''}
+   ${n.id===fm.best?stamp('인기','질문',false,true):''}</button>`;
+ const head=(s,count)=>`<div class="fhead${vis(s)}"><span class="fstep">${s}</span><span><b>${FSTEPS[s].name}</b><small>${FSTEPS[s].sub}${count!=null?' · '+count+'개':''}</small></span></div>`;
+ const empty=(s,t)=>`<p class="fempty${vis(s)}">${t}</p>`;
+ const byRank=(a,b)=>(fm.rank[a.by]-fm.rank[b.by])||(FORDER[a.kind]-FORDER[b.kind]);
+ const col1=fm.shown.filter(n=>n.kind==='n1'||n.kind==='n2').sort(byRank),col3=fm.shown.filter(n=>n.kind==='n4').sort(byRank);
+ const lanes=fm.kws.map(k=>{const ns=fm.shown.filter(n=>n.kind==='t'&&n.kw===k).sort(byRank),more=fm.kwCount[k]-ns.length;
+  return `<div class="lane"><button type="button" class="fnode hub${vis(2)}${lit('h_'+k)}" data-fid="h_${esc(k)}" data-act="flowfocus" data-k="kw" data-v="${esc(k)}" style="--hs:${Math.min(1,fm.kwCount[k]/8).toFixed(2)}">${esc(k)}<small>탐구 질문 ${fm.kwCount[k]}개</small></button>
+   <div class="lane-notes">${ns.map(note).join('')}${more>0?`<span class="fmore${vis(3)}">+${more}개</span>`:''}</div></div>`}).join('');
+ return `<div class="flow-wrap${on?' focus':''}${present?' present':''}" id="flow" role="group" aria-label="질문 수사판: 학생 질문이 차시를 따라 이어진 흐름. 같은 내용은 아래 질문 벽 표에도 있습니다.">
+  <svg class="flow-svg" id="flow-svg" aria-hidden="true"></svg>
+  <div class="flow-cols">
+   <section class="fcol" data-col="1">${head(1,fm.stat.start)}${col1.length?`<div class="fstack">${col1.map(note).join('')}</div>`:empty(1,'아직 새로운 질문이 없어요.')}</section>
+   <section class="fcol" data-col="2"><div class="fhead2">${head(2,fm.stat.kw)}${head(3,fm.stat.t)}</div>${lanes||empty(2,'아직 붙은 탐구 질문이 없어요.')}</section>
+   <section class="fcol" data-col="3">${head(4,fm.stat.n4)}${col3.length?`<div class="fstack">${col3.map(note).join('')}</div>`:empty(4,'아직 새로운 질문이 없어요.')}</section>
+   <section class="fcol fcol-big" data-col="4">${head(5)}
+    <button type="button" class="fnode bigq${vis(5)}${lit('big')}" data-fid="big" data-act="flowfocus" data-k="none" data-v="">
+     <span class="label">대질문</span><span class="bq">${BIGQ}</span><span class="fby">새로운 질문 ${fm.stat.n4}개가 이곳으로 모여요</span></button></section>
+  </div></div>
+  ${fm.hidden?`<p class="muted">질문 여정이 긴 학생 ${FLIMIT}명과 도장을 많이 받은 질문을 먼저 보여 줍니다. 나머지 ${fm.hidden}개는 「모든 질문 보기」를 누르면 나옵니다.</p>`:''}`}
+
+const flowLegend=`<div class="flegend"><span><i class="lg"></i>같은 학생의 질문 여정</span><span><i class="lg k"></i>같은 핵심 낱말에서 나온 탐구 질문</span><span><i class="lg b"></i>대질문으로 모이는 질문</span><span>쪽지나 낱말을 누르면 그 흐름만 밝아져요</span></div>`;
+const flowTools=present=>`<div class="row ftools">
+ ${present?'':'<a class="btn small" href="#flow" data-act="gopresent">발표 모드로 크게 보기</a>'}
+ <button class="btn ghost small" data-act="flowtour">학생 여정 하나씩 ▶</button>
+ ${FlowUI.focus?'<button class="btn ghost small" data-act="flowclear">강조 끄기</button>':''}
+ <button class="chip" data-act="flowanon" aria-pressed="${FlowUI.anon}" style="font-size:15px">별명 가리기</button>
+ <button class="chip" data-act="flowall" aria-pressed="${FlowUI.all}" style="font-size:15px">모든 질문 보기</button>
+ ${present?`<button class="chip" data-act="flowfit" aria-pressed="${FlowUI.fit}" style="font-size:15px">한 화면에 맞추기</button>`:''}</div>`;
+
+// 끈 그리기: 쪽지가 화면에 놓인 자리를 재서 곡선으로 잇는다. 크기가 바뀌면 다시 그린다.
+function drawFlow(){
+ const wrap=document.getElementById('flow'),svg=document.getElementById('flow-svg');if(!wrap||!svg||!FLOW)return;
+ const W=wrap.getBoundingClientRect(),cache={},ow=wrap.offsetWidth,oh=wrap.offsetHeight,z=ow?W.width/ow:1;
+ svg.setAttribute('width',ow);svg.setAttribute('height',oh);svg.setAttribute('viewBox','0 0 '+ow+' '+oh);
+ const box=id=>{if(id in cache)return cache[id];const e=wrap.querySelector('[data-fid="'+CSS.escape(id)+'"]');
+  if(!e||e.classList.contains('hide'))return cache[id]=null;
+  const r=e.getBoundingClientRect(),c=e.closest('[data-col]');
+  const X=x=>(x-W.left)/z,Y=y=>(y-W.top)/z;
+  return cache[id]={l:X(r.left),r:X(r.right),t:Y(r.top),b:Y(r.bottom),cx:X((r.left+r.right)/2),cy:Y((r.top+r.bottom)/2),col:c&&c.dataset.col,on:e.classList.contains('on')}};
+ const focus=wrap.classList.contains('focus'),h=(x1,y1,x2,y2)=>{const dx=Math.max(24,Math.abs(x2-x1)*.5);return [`M${x1} ${y1}C${x1+dx} ${y1} ${x2-dx} ${y2} ${x2} ${y2}`,[x1,y1],[x2,y2]]};
+ const layer={k:[],b:[],j:[],hi:[]};
+ FLOW.edges.forEach(e=>{const a=box(e.a),b=box(e.b);if(!a||!b)return;let p;
+  if(b.l>=a.r-2)p=h(a.r,a.cy,b.l,b.cy);                 // 오른쪽으로
+  else if(a.l>=b.r-2)p=h(b.r,b.cy,a.l,a.cy);            // 왼쪽으로
+  else if(a.col===b.col){const x=Math.min(a.l,b.l)-34;p=[`M${a.l} ${a.cy}C${x} ${a.cy} ${x} ${b.cy} ${b.l} ${b.cy}`,[a.l,a.cy],[b.l,b.cy]]} // 같은 칸: 왼쪽으로 휘어 잇기
+  else{const [u,v]=b.t>=a.b-2?[a,b]:[b,a],dy=Math.max(24,(v.t-u.b)*.5);p=[`M${u.cx} ${u.b}C${u.cx} ${u.b+dy} ${v.cx} ${v.t-dy} ${v.cx} ${v.t}`,[u.cx,u.b],[v.cx,v.t]]} // 좁은 화면: 위아래로
+  const st=focus?(a.on&&b.on?' hi':' dim'):'';
+  const svgp=`<path class="e e-${e.k}${st}" d="${p[0]}"/>`+(e.k==='j'?p.slice(1).map(([x,y])=>`<circle class="pin${st===' dim'?' dim':''}" cx="${x}" cy="${y}" r="3.6"/>`).join(''):'');
+  (st===' hi'?layer.hi:layer[e.k]).push(svgp)});
+ svg.innerHTML=layer.k.join('')+layer.b.join('')+layer.j.join('')+layer.hi.join('');
+}
+// 발표 모드 「한 화면에 맞추기」: 수사판을 조금 넓게 펼쳐 놓고(쪽지가 옆으로 더 들어가 높이가 줄어든다) 화면 높이에 맞게 줄인다.
+// 글씨가 읽히도록 60% 밑으로는 줄이지 않는다(학생이 많으면 조금 스크롤된다).
+function fitFlow(){const fit=document.getElementById('flowfit'),w=document.getElementById('flow');if(!fit||!w)return;
+ w.style.transform='';w.style.width='';w.style.marginLeft='';fit.style.height='';if(!FlowUI.fit||fit.clientWidth<700)return; // 휴대폰처럼 좁으면 맞추지 않고 세로로 쌓는다
+ const MAXW=1.5,MINS=.6,cw=fit.clientWidth,top=fit.getBoundingClientRect().top+window.scrollY,avail=Math.max(320,window.innerHeight-top-16);
+ const lw=s=>Math.min(cw*MAXW,cw/s);let s=1;
+ for(let i=0;i<5;i++){w.style.width=lw(s)+'px';const ns=Math.max(MINS,Math.min(1,avail/w.offsetHeight));if(Math.abs(ns-s)<.01){s=ns;break}s=ns}
+ const W0=lw(s);w.style.width=W0+'px';const sf=Math.max(MINS,Math.min(1,avail/w.offsetHeight,cw/W0));
+ if(sf>=1){w.style.width='';return}
+ w.style.transformOrigin='top left';w.style.transform='scale('+sf+')';fit.style.height=Math.ceil(w.offsetHeight*sf)+'px';
+ w.style.marginLeft=Math.max(0,(cw-w.offsetWidth*sf)/2)+'px'}
+const flowRO=window.ResizeObserver?new ResizeObserver(()=>drawFlow()):null;
+function mountFlow(){const w=document.getElementById('flow');if(!w)return;fitFlow();drawFlow();
+ if(flowRO){flowRO.disconnect();flowRO.observe(w)}else requestAnimationFrame(drawFlow)}
+let flowRz=0;window.addEventListener('resize',()=>{cancelAnimationFrame(flowRz);flowRz=requestAnimationFrame(()=>{fitFlow();drawFlow()})});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{fitFlow();drawFlow()});
+
+V.flow=()=>{
+ if(ONLINE&&!Teacher.data)return teacherLogin();
+ const td=TD(),s=FlowUI.step;
+ return `
+<section class="present-bar t5">
+ <div class="row" style="justify-content:space-between;align-items:flex-end">
+  <div><span class="label">질문 수사판 · ${td.live?esc(td.name||td.code):'<span class="demo">예시 데이터</span>'}</span><h1>우리 반 질문은 어떻게 이어졌을까?</h1></div>
+  <div class="row"><button class="btn ghost small" data-act="flowfull">전체 화면</button><a class="btn ghost small" href="#teacher">선생님 화면으로</a></div></div>
+ <div class="row fsteps">${[1,2,3,4,5].map(i=>`<button class="fdot${i<=s?' done':''}${i===s?' now':''}" data-act="flowgo" data-v="${i}" aria-label="${i}단계 ${FSTEPS[i].name}"${i===s?' aria-current="step"':''}><b>${i}</b><span>${FSTEPS[i].name}</span></button>`).join('')}
+  <span style="flex:1 1 20px"></span><button class="btn small ghost" data-act="flowprev"${s<=1?' disabled':''}>◀ 이전</button><button class="btn small" data-act="flownext"${s>=5?' disabled':''}>다음 ▶</button></div>
+ ${flowSay(flowModel(td),true)}
+</section>
+<div class="flow-fit" id="flowfit">${flowMap(td,true)}</div>
+${flowTools(true)}${flowLegend}
+<p class="muted">발표할 때: → 또는 스페이스 = 다음 단계, ← = 이전 단계, Esc = 강조 끄기. 프레젠터 리모컨으로도 넘길 수 있어요.</p>`};
 
 async function fillQR(){const el=document.getElementById('qr');if(!el||!Teacher.data)return;
  try{if(!window.qrcode)await loadScript(QR_JS);const q=qrcode(0,'M');q.addData(joinUrl(Teacher.data.summary.code));q.make();
@@ -899,6 +1148,19 @@ const A={
  tlogin(){const c=document.getElementById('t-code'),p=document.getElementById('t-pin');if(!c.value.trim()||!p.value){Teacher.msg='학급 코드와 PIN을 모두 넣어 주세요.';return}
   Teacher.login(c.value,p.value);return false},
  tlogout(){Teacher.logout()},
+ // 질문 수사판
+ flowfocus(d){const f=FlowUI.focus;FlowUI.focus=d.k==='none'||(f&&f.k===d.k&&f.v===d.v)?null:{k:d.k,v:d.v}},
+ flowclear(){FlowUI.focus=null},
+ flowtour(){const td=TD();if(!td)return false;const fm=flowModel(td);if(!fm.tour.length){FlowUI.focus=null;return}
+  FlowUI.tour=(FlowUI.tour+1)%fm.tour.length;FlowUI.focus={k:'by',v:fm.tour[FlowUI.tour]};FlowUI.step=5},
+ flownext(){if(FlowUI.step<5){FlowUI.step++;FlowUI.focus=null;if(FlowUI.step===5)confetti()}},
+ flowprev(){if(FlowUI.step>1){FlowUI.step--;FlowUI.focus=null}},
+ flowgo(d){const s=+d.v;if(s===5&&FlowUI.step<5)confetti();FlowUI.step=s;FlowUI.focus=null},
+ flowanon(){FlowUI.anon=!FlowUI.anon;saveFlowPrefs()},
+ flowall(){FlowUI.all=!FlowUI.all;saveFlowPrefs()},
+ flowfit(){FlowUI.fit=!FlowUI.fit;saveFlowPrefs()},
+ gopresent(){FlowUI.step=1;FlowUI.focus=null;return false}, // 주소가 #flow 로 바뀌며 다시 그린다
+ flowfull(){try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}return false},
  trefresh(){Teacher.refresh();return false},
  download(){const td=TD();if(!td)return 'keep';
   const blob=new Blob(['﻿'+csvText(td)],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');
@@ -927,14 +1189,21 @@ document.addEventListener('input',e=>{const p=e.target.dataset&&e.target.dataset
 document.addEventListener('keydown',e=>{if(e.key!=='Enter'||e.isComposing)return;const id=e.target.id;
  if(ONLINE&&(id==='f-me-code'||id==='f-me-name'||id==='f-me-group')){e.preventDefault();e.target.blur();A.join()}
  else if(id==='t-pin'||id==='t-code'){e.preventDefault();A.tlogin();}});
+// 발표 모드: → 스페이스 PageDown = 다음, ← PageUp = 이전, Esc = 강조 끄기 (프레젠터 리모컨은 PageDown/PageUp 을 보낸다)
+document.addEventListener('keydown',e=>{if(route()!=='flow'||typing()||e.altKey||e.ctrlKey||e.metaKey||e.isComposing)return;
+ const k=e.key,t=e.target;if((k===' '||k==='Enter')&&t.closest&&t.closest('button,a'))return; // 단추 위에서는 단추가 처리
+ let act=null;if(k==='ArrowRight'||k==='PageDown'||k===' ')act='flownext';else if(k==='ArrowLeft'||k==='PageUp')act='flowprev';else if(k==='Escape'&&FlowUI.focus)act='flowclear';
+ if(!act)return;e.preventDefault();A[act]();softRender()});
 
 const whoText=()=>S.me.name?myName()+' 탐정'+(Sync.ready()?' · '+S.me.joined:''):'';
-const ROUTES={'home':'home','mission-1':'m1','mission-2':'m2','mission-3':'m3','mission-4':'m4','teacher':'teacher'};
+const ROUTES={'home':'home','mission-1':'m1','mission-2':'m2','mission-3':'m3','mission-4':'m4','teacher':'teacher','flow':'flow'};
 const TC={home:'var(--white)',1:'var(--sky)',2:'var(--peach)',3:'var(--lemon)',4:'var(--mint)'};
 const route=()=>ROUTES[(location.hash||'#home').slice(1)]||'home';
+const isT=()=>route()==='teacher'||route()==='flow'; // 선생님 화면(교사 자료를 불러오는 화면)
 function render(){
  const v=route();
- const app=document.getElementById('app');app.className={m1:'t1',m2:'t2',m3:'t3',m4:'t4',teacher:'t5'}[v]||'';
+ const app=document.getElementById('app');app.className={m1:'t1',m2:'t2',m3:'t3',m4:'t4',teacher:'t5',flow:'t5 wide'}[v]||'';
+ document.body.classList.toggle('present',v==='flow');
  // 연결 모드인데 아직 입장하지 않았으면 사건 화면 위에 알려 준다
  const remind=ONLINE&&/^m\d$/.test(v)&&!Sync.ready()?`<section class="card" style="--c:var(--peach)">${say('think','아직 입장하지 않았어. 첫 화면에서 학급 코드, 모둠, 별명을 쓰고 「입장하기」를 누르면 내 기록이 반 친구들과 모여. <a href="#home">명찰 채우러 가기</a>','oops')}</section>`:'';
  app.innerHTML=remind+V[v]();
@@ -943,8 +1212,9 @@ function render(){
  document.getElementById('tabs').innerHTML=`<a class="tab" href="#home" ${v==='home'?'aria-current="page"':''}>사건 목록</a>`+
   [1,2,3,4].map(n=>`<a class="tab" style="--tc:${TC[n]}" href="#mission-${n}" ${v==='m'+n?'aria-current="page"':''}>${n}차시${done[n]()?STAR:''}</a>`).join('');
  if(v==='teacher')fillQR();
+ if(v==='teacher'||v==='flow')mountFlow();
 }
-window.addEventListener('hashchange',()=>{render();window.scrollTo(0,0);if(route()==='teacher')Teacher.refresh();else Live.refresh()});
+window.addEventListener('hashchange',()=>{render();window.scrollTo(0,0);if(isT())Teacher.refresh();else Live.refresh()});
 
 /* 시작: 연결 모드면 입장 상태를 확인하고, 실시간 채널에 붙고, 주기적으로 다시 불러온다 */
 render();
@@ -952,8 +1222,8 @@ if(ONLINE){
  if(S.me.joined){RT.connect(S.me.joined);Live.refresh(true);Sync.schedule(500)}
  else if(S.me.code&&S.me.name.trim())A.join(); // QR 로 다시 들어온 경우
  if(Teacher.pin){Teacher.refresh();RT.connect(Teacher.code)}
- setInterval(()=>{if(document.hidden)return;if(route()==='teacher')Teacher.refresh();else Live.refresh()},CFG.pollMs||15000);
- document.addEventListener('visibilitychange',()=>{if(!document.hidden){Sync.schedule(0);route()==='teacher'?Teacher.refresh():Live.refresh()}});
+ setInterval(()=>{if(document.hidden)return;if(isT())Teacher.refresh();else Live.refresh()},CFG.pollMs||15000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){Sync.schedule(0);isT()?Teacher.refresh():Live.refresh()}});
 }
 </script>
 </body>
