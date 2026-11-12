@@ -5,7 +5,7 @@
 
 ## 현재 상태
 
-- 앱은 여전히 `index.html` 한 파일. 브라우저에서 바로 열린다. 화면은 주소의 해시로 나뉜다: `#home`, `#mission-1` ~ `#mission-4`, `#teacher`, `#flow`(질문 수사판 발표 모드).
+- 앱은 여전히 `index.html` 한 파일. 브라우저에서 바로 열린다. 화면은 주소의 해시로 나뉜다: `#home`, `#mission-1` ~ `#mission-4`, `#teacher`, `#flow`(질문 수사판 발표 모드), `#big`(대질문: 나의 생각).
 - 모드는 `config.js`(`window.APP_CONFIG = {supabaseUrl, supabaseAnonKey}`)가 있느냐로 정해진다.
   - **연습 모드**(config 없음): 학생 입력은 `localStorage`(키 `info-detective-v1`)에만, 반 친구들 결과는 예시 데이터(24명)에 「예시 데이터」 표시.
   - **연결 모드**(config 있음): 학급 코드로 입장하고, 입력은 Supabase RPC 로 저장, 반 결과는 학급 집계로 바뀐다. 연결 방법은 `SUPABASE.md`.
@@ -60,7 +60,8 @@
    `FlowUI`(단계·강조·별명 가리기·모든 질문). 교사 화면에 미리보기가 있고 `#flow`가 발표 모드다.
 5. **동작**: `A` 객체의 함수들이 `data-act` 클릭을 처리하고 `render()`를 다시 부른다. 클릭 뒤 `Sync.schedule()`.
 
-서버에 보내는 항목(`mission:item`): `0:progress`, `1:cards|vote|newq`, `2:posts|pledge|newq`, `3:kw|practice|sum`, `4:sort|q1~q4|newq|wish`.
+서버에 보내는 항목(`mission:item`): `0:progress`, `1:cards|vote|newq`, `2:posts|pledge|newq`, `3:kw|practice|sum`, `4:sort|q1~q4|newq|wish|bigq`.
+(`4:bigq` = 대질문 나의 생각 `{stance, text}`. 「붙이기」를 누른 뒤부터 보낸다. 4차시 항목으로 저장하므로 SQL 변경이 필요 없었다.)
 새 항목을 만들면 `Sync.items()`, 필요하면 `schema.sql`의 `ud_class_summary`, 교사 화면의 `ITEM`/`itemText`에 함께 넣는다.
 
 ## 한 일 (2026-11-11)
@@ -88,6 +89,14 @@
   그래서 15초 새로 고침이나 실시간 갱신이 와도 새 질문만 꽂힌다. 쪽지 id 는 안정적이어야 한다(새로운 질문은 「차시+학생」, 탐구 질문은 서버 id).
 - 「동작 줄이기」(prefers-reduced-motion)면 CSS 움직임과 불빛을 모두 끈다(`motionOK()`).
 - 학생 연결은 `by`(모둠+별명) 문자열로 한다. 같은 모둠에 같은 별명이 있으면 한 사람으로 이어진다.
+
+## 대질문 챕터와 「우리의 생각」 보드 (2026-11-12)
+
+- 학생: `#big` 대질문 화면(탭·첫 화면 카드·4차시 끝 단추). 내가 만든 질문 돌아보기 → ○ 그렇다 / △ 잘 모르겠다 / × 그렇지 않다 + 까닭 → 「선생님 보드판에 붙이기」. `S.big`, 해결 표시 `done[6]`, 배지 `ICON[6]`.
+  학생은 다른 친구의 생각을 보지 않는다(집계 SQL 을 바꾸지 않음). 원문은 교사만 본다.
+- 교사: 질문 수사판의 대질문 카드를 누르면(`FlowUI.big`) 보드판이 `bigBoard`로 바뀐다. 생각 쪽지가 ○△× 세 무리로 꽂히고 노란 끈이 대질문으로 모인다.
+  생각 쪽지를 누르면 그 학생의 질문 여정으로 간다(대표 8명에 없어도 강조한 학생은 보이게 함). 발표 모드는 5단계 다음(→)이 「★ 우리의 생각」, ← 또는 Esc 로 돌아간다.
+- 교사 화면 칸 「대질문 생각」 수, CSV 항목 「대질문 나의 생각」.
 
 ## 다음 할 일
 
