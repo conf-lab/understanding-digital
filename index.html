@@ -271,6 +271,22 @@ body.present main{padding-top:18px}
 .ftools{gap:8px}
 .flow-wrap.present .fq{font-size:20px}
 .flow-wrap.present .bigq .bq{font-size:28px}
+.spark-halo{fill:rgba(255,210,63,.32)} .spark-dot{fill:#FFD23F;stroke:#3A2F4B;stroke-width:2.5}
+/* 질문 수사판의 움직임: 쪽지 꽂힘, 끈 그려짐, 대질문 빛 고리. 동작 줄이기 설정이면 모두 끈다(불빛은 스크립트에서 끈다) */
+@media (prefers-reduced-motion:no-preference){
+  .flow-wrap .fnode.pop{animation:pinIn .6s cubic-bezier(.2,1.5,.4,1) both}
+  .flow-wrap .fhead.pop{animation:fadeUp .45s ease-out both}
+  .flow-wrap .bigq.pop{animation:bigIn 1.6s cubic-bezier(.2,1.3,.4,1) both}
+  .e.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:drawLine .85s ease-in-out forwards}
+  .e.hi.draw{animation-duration:.7s}
+  .e-k.draw{stroke-dasharray:3 6;stroke-dashoffset:0;animation:fadeIn .8s ease-out both}
+  .pin.pop{animation:fadeIn .5s ease-out both}
+  @keyframes pinIn{from{opacity:0;transform:translateY(-20px) scale(.8) rotate(-6deg)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}}
+  @keyframes fadeIn{from{opacity:0}}
+  @keyframes drawLine{to{stroke-dashoffset:0}}
+  @keyframes bigIn{0%{opacity:0;transform:scale(.55)}55%{opacity:1;transform:scale(1.06);box-shadow:0 7px 0 var(--lav-d),0 0 0 0 rgba(124,98,219,.6)}100%{box-shadow:0 7px 0 var(--lav-d),0 0 0 36px rgba(124,98,219,0)}}
+}
 @container (min-width:1100px){.flow-cols{gap:56px}}
 @container (max-width:1000px){
   .flow-cols{grid-template-columns:minmax(120px,1fr) minmax(230px,2.2fr) minmax(120px,1fr) minmax(130px,.9fr);gap:26px}
@@ -951,7 +967,8 @@ let FLOW=null; // 마지막으로 그린 수사판 모델(끈 그리기에 쓴�
 
 function flowModel(td){
  const nodes=[];
- td.newqs.forEach((x,i)=>{const text=String(x.q||'').trim();if(!text)return;const kind=x.m==4?'n4':x.m==2?'n2':'n1';nodes.push({id:kind+'_'+i,kind,by:x.by,text})});
+ // 새로운 질문은 차시마다 학생당 하나라서 「차시+학생」을 id 로 쓴다(목록 순서가 바뀌어도 같은 쪽지로 알아본다)
+ td.newqs.forEach((x,i)=>{const text=String(x.q||'').trim();if(!text)return;const kind=x.m==4?'n4':x.m==2?'n2':'n1';let id=kind+'_'+x.by;if(nodes.some(n=>n.id===id))id+='_'+i;nodes.push({id,kind,by:x.by,text})});
  td.board.forEach(b=>nodes.push({id:'t_'+b.id,kind:'t',by:b.by,text:b.q,kw:b.kw||'기타',t:b.t,likes:b.likes||0,ans:(b.ans||[]).length}));
  const st={};nodes.forEach(n=>{const s=st[n.by]=st[n.by]||{by:n.by,nodes:[],kinds:new Set(),likes:0};s.nodes.push(n);s.kinds.add(n.kind);s.likes+=n.likes||0});
  // 질문 여정이 긴(여러 단계에 질문을 남긴) 학생부터
@@ -996,29 +1013,46 @@ function flowSay(fm,present){const f=FlowUI.focus,s=fm.stat;
   4:`탐구 질문은 나의 삶으로 생각을 넓힌 <b>새로운 질문 ${s.n4}개</b>로 이어졌어. 빨간 끈은 한 친구의 질문이 자라 온 길이야.`,
   5:`그리고 모든 질문은 대질문 <b>「${BIGQ}」</b>로 모여.`}[FlowUI.step])}
 
+/* 움직임(질문 수사판에만 허용한 예외. 학생 화면은 여전히 흔들림·도장·색종이 세 가지만):
+   새로 나타난 쪽지는 꽂히고, 새 끈은 그려지고, 강조한 학생의 여정에는 불빛이 흐른다.
+   이미 본 것은 다시 움직이지 않도록 처음 나타난 시각을 기억한다(FlowAnim.born).
+   새로 고침으로 다시 그려도 남은 만큼만 이어서 움직인다. 기기에서 「동작 줄이기」를 켜면 모두 끈다. */
+const FlowAnim={born:{},fkey:''};
+const motionOK=()=>!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+// key 가 처음 보이면 (지금+delay)에 시작한 것으로 적어 두고, 아직 움직이는 중이면 animation-delay(ms, 음수면 이미 진행 중)를 돌려준다
+function animAt(key,delay,dur){if(!motionOK())return null;const now=performance.now();
+ if(FlowAnim.born[key]==null)FlowAnim.born[key]=now+delay;const el=now-FlowAnim.born[key];return el<dur?Math.round(-el):null}
+
 function flowMap(td,present){
  const fm=FLOW=flowModel(td),on=flowLit(fm),step=present?FlowUI.step:5;
  const vis=s=>s<=step?'':' hide',lit=id=>on&&on.has(id)?' on':'';
- const note=n=>`<button type="button" class="fnode fnote k-${n.kind}${vis(FSTEP[n.kind])}${lit(n.id)}" data-fid="${esc(n.id)}" data-act="flowfocus" data-k="by" data-v="${esc(n.by)}">
+ let order=0; // 이번에 새로 나타나는 것들의 순서(왼쪽 칸부터 0.07초씩 늦게)
+ const pop=(key,visible,dur)=>{if(!visible){delete FlowAnim.born[key];return ['','']}
+  const d=animAt(key,FlowAnim.born[key]==null?Math.min(1200,order++*70):0,dur);return d==null?['','']:[' pop','animation-delay:'+d+'ms;']};
+ const note=n=>{const a=pop('n:'+n.id,FSTEP[n.kind]<=step,700);return `<button type="button" class="fnode fnote k-${n.kind}${vis(FSTEP[n.kind])}${lit(n.id)}${a[0]}" style="${a[1]}" data-fid="${esc(n.id)}" data-act="flowfocus" data-k="by" data-v="${esc(n.by)}">
    ${n.kind==='t'?`<span class="ftag">${n.t}유형</span>`:n.kind==='n4'?'':`<span class="ftag">${n.kind==='n1'?1:2}차시</span>`}
    <span class="fq">${esc(clip(n.text,70))}</span><span class="fby">${esc(fwho(n.by))}${n.kind==='t'?` · 「${esc(n.kw)}」`:''}</span>
    ${n.kind==='t'&&(n.likes||n.ans)?`<span class="fmeta">${n.likes?`<span class="fl">도장 ${n.likes}</span>`:''}${n.ans?`<span>답 ${n.ans}</span>`:''}</span>`:''}
-   ${n.id===fm.best?stamp('인기','질문',false,true):''}</button>`;
- const head=(s,count)=>`<div class="fhead${vis(s)}"><span class="fstep">${s}</span><span><b>${FSTEPS[s].name}</b><small>${FSTEPS[s].sub}${count!=null?' · '+count+'개':''}</small></span></div>`;
+   ${n.id===fm.best?stamp('인기','질문',false,true):''}</button>`};
+ const head=(s,count)=>{const a=pop('hd:'+s,s<=step,500);return `<div class="fhead${vis(s)}${a[0]}" style="${a[1]}"><span class="fstep">${s}</span><span><b>${FSTEPS[s].name}</b><small>${FSTEPS[s].sub}${count!=null?' · '+count+'개':''}</small></span></div>`};
  const empty=(s,t)=>`<p class="fempty${vis(s)}">${t}</p>`;
  const byRank=(a,b)=>(fm.rank[a.by]-fm.rank[b.by])||(FORDER[a.kind]-FORDER[b.kind]);
  const col1=fm.shown.filter(n=>n.kind==='n1'||n.kind==='n2').sort(byRank),col3=fm.shown.filter(n=>n.kind==='n4').sort(byRank);
- const lanes=fm.kws.map(k=>{const ns=fm.shown.filter(n=>n.kind==='t'&&n.kw===k).sort(byRank),more=fm.kwCount[k]-ns.length;
-  return `<div class="lane"><button type="button" class="fnode hub${vis(2)}${lit('h_'+k)}" data-fid="h_${esc(k)}" data-act="flowfocus" data-k="kw" data-v="${esc(k)}" style="--hs:${Math.min(1,fm.kwCount[k]/8).toFixed(2)}">${esc(k)}<small>탐구 질문 ${fm.kwCount[k]}개</small></button>
+ const c1=head(1,fm.stat.start)+(col1.length?`<div class="fstack">${col1.map(note).join('')}</div>`:empty(1,'아직 새로운 질문이 없어요.'));
+ const c2h=`<div class="fhead2">${head(2,fm.stat.kw)}${head(3,fm.stat.t)}</div>`;
+ const lanes=fm.kws.map(k=>{const ns=fm.shown.filter(n=>n.kind==='t'&&n.kw===k).sort(byRank),more=fm.kwCount[k]-ns.length,a=pop('n:h_'+k,2<=step,700);
+  return `<div class="lane"><button type="button" class="fnode hub${vis(2)}${lit('h_'+k)}${a[0]}" data-fid="h_${esc(k)}" data-act="flowfocus" data-k="kw" data-v="${esc(k)}" style="--hs:${Math.min(1,fm.kwCount[k]/8).toFixed(2)};${a[1]}">${esc(k)}<small>탐구 질문 ${fm.kwCount[k]}개</small></button>
    <div class="lane-notes">${ns.map(note).join('')}${more>0?`<span class="fmore${vis(3)}">+${more}개</span>`:''}</div></div>`}).join('');
+ const c3=head(4,fm.stat.n4)+(col3.length?`<div class="fstack">${col3.map(note).join('')}</div>`:empty(4,'아직 새로운 질문이 없어요.'));
+ const c4h=head(5),ab=pop('n:big',5<=step,1600);
  return `<div class="flow-wrap${on?' focus':''}${present?' present':''}" id="flow" role="group" aria-label="질문 수사판: 학생 질문이 차시를 따라 이어진 흐름. 같은 내용은 아래 질문 벽 표에도 있습니다.">
   <svg class="flow-svg" id="flow-svg" aria-hidden="true"></svg>
   <div class="flow-cols">
-   <section class="fcol" data-col="1">${head(1,fm.stat.start)}${col1.length?`<div class="fstack">${col1.map(note).join('')}</div>`:empty(1,'아직 새로운 질문이 없어요.')}</section>
-   <section class="fcol" data-col="2"><div class="fhead2">${head(2,fm.stat.kw)}${head(3,fm.stat.t)}</div>${lanes||empty(2,'아직 붙은 탐구 질문이 없어요.')}</section>
-   <section class="fcol" data-col="3">${head(4,fm.stat.n4)}${col3.length?`<div class="fstack">${col3.map(note).join('')}</div>`:empty(4,'아직 새로운 질문이 없어요.')}</section>
-   <section class="fcol fcol-big" data-col="4">${head(5)}
-    <button type="button" class="fnode bigq${vis(5)}${lit('big')}" data-fid="big" data-act="flowfocus" data-k="none" data-v="">
+   <section class="fcol" data-col="1">${c1}</section>
+   <section class="fcol" data-col="2">${c2h}${lanes||empty(2,'아직 붙은 탐구 질문이 없어요.')}</section>
+   <section class="fcol" data-col="3">${c3}</section>
+   <section class="fcol fcol-big" data-col="4">${c4h}
+    <button type="button" class="fnode bigq${vis(5)}${lit('big')}${ab[0]}" style="${ab[1]}" data-fid="big" data-act="flowfocus" data-k="none" data-v="">
      <span class="label">대질문</span><span class="bq">${BIGQ}</span><span class="fby">새로운 질문 ${fm.stat.n4}개가 이곳으로 모여요</span></button></section>
   </div></div>
   ${fm.hidden?`<p class="muted">질문 여정이 긴 학생 ${FLIMIT}명과 도장을 많이 받은 질문을 먼저 보여 줍니다. 나머지 ${fm.hidden}개는 「모든 질문 보기」를 누르면 나옵니다.</p>`:''}`}
@@ -1042,18 +1076,38 @@ function drawFlow(){
   const r=e.getBoundingClientRect(),c=e.closest('[data-col]');
   const X=x=>(x-W.left)/z,Y=y=>(y-W.top)/z;
   return cache[id]={l:X(r.left),r:X(r.right),t:Y(r.top),b:Y(r.bottom),cx:X((r.left+r.right)/2),cy:Y((r.top+r.bottom)/2),col:c&&c.dataset.col,on:e.classList.contains('on')}};
- const focus=wrap.classList.contains('focus'),h=(x1,y1,x2,y2)=>{const dx=Math.max(24,Math.abs(x2-x1)*.5);return [`M${x1} ${y1}C${x1+dx} ${y1} ${x2-dx} ${y2} ${x2} ${y2}`,[x1,y1],[x2,y2]]};
- const layer={k:[],b:[],j:[],hi:[]};
- FLOW.edges.forEach(e=>{const a=box(e.a),b=box(e.b);if(!a||!b)return;let p;
-  if(b.l>=a.r-2)p=h(a.r,a.cy,b.l,b.cy);                 // 오른쪽으로
-  else if(a.l>=b.r-2)p=h(b.r,b.cy,a.l,a.cy);            // 왼쪽으로
-  else if(a.col===b.col){const x=Math.min(a.l,b.l)-34;p=[`M${a.l} ${a.cy}C${x} ${a.cy} ${x} ${b.cy} ${b.l} ${b.cy}`,[a.l,a.cy],[b.l,b.cy]]} // 같은 칸: 왼쪽으로 휘어 잇기
-  else{const [u,v]=b.t>=a.b-2?[a,b]:[b,a],dy=Math.max(24,(v.t-u.b)*.5);p=[`M${u.cx} ${u.b}C${u.cx} ${u.b+dy} ${v.cx} ${v.t-dy} ${v.cx} ${v.t}`,[u.cx,u.b],[v.cx,v.t]]} // 좁은 화면: 위아래로
-  const st=focus?(a.on&&b.on?' hi':' dim'):'';
-  const svgp=`<path class="e e-${e.k}${st}" d="${p[0]}"/>`+(e.k==='j'?p.slice(1).map(([x,y])=>`<circle class="pin${st===' dim'?' dim':''}" cx="${x}" cy="${y}" r="3.6"/>`).join(''):'');
+ const focus=wrap.classList.contains('focus'),f=FlowUI.focus,fkey=f?f.k+':'+f.v:'',mo=motionOK(),now=performance.now();
+ if(FlowAnim.fkey!==fkey){Object.keys(FlowAnim.born).forEach(k=>{if(k.slice(0,2)==='f:')delete FlowAnim.born[k]});FlowAnim.fkey=fkey} // 강조가 바뀌면 강조 끈을 새로 그린다
+ const layer={k:[],b:[],j:[],hi:[]};let ei=0,hi=0,hiEnd=0;
+ FLOW.edges.forEach(e=>{const key='e:'+e.a+'>'+e.b,a=box(e.a),b=box(e.b);if(!a||!b){delete FlowAnim.born[key];return}
+  const p=flowGeo(a,b),st=focus?(a.on&&b.on?' hi':' dim'):'';let d=null;
+  if(mo){
+   if(st===' hi'){if(FlowAnim.born[key]==null)FlowAnim.born[key]=now-1e4; // 강조된 채 처음 보인 끈은 일반 그리기를 건너뛴다
+    const k2='f:'+fkey+':'+key;d=animAt(k2,FlowAnim.born[k2]==null?Math.min(2400,hi++*280):0,700);if(d!=null)hiEnd=Math.max(hiEnd,d+700)}  // 여정 순서대로 하나씩
+   else d=animAt(key,FlowAnim.born[key]==null?350+Math.min(1200,ei++*35):0,850); // 쪽지가 꽂힌 뒤 끈이 이어진다
+  }
+  const dr=d!=null,sty=dr?` style="animation-delay:${d}ms"`:'';
+  const svgp=`<path class="e e-${e.k}${st}${dr?' draw':''}"${dr&&e.k!=='k'?' pathLength="1"':''}${sty} d="${p[0]}"/>`+
+   (e.k==='j'?p.slice(1).map(([x,y])=>`<circle class="pin${st===' dim'?' dim':''}${dr?' pop':''}"${sty} cx="${x}" cy="${y}" r="3.6"/>`).join(''):'');
   (st===' hi'?layer.hi:layer[e.k]).push(svgp)});
- svg.innerHTML=layer.k.join('')+layer.b.join('')+layer.j.join('')+layer.hi.join('');
+ // 여정 불빛: 강조한 학생의 첫 질문에서 대질문까지 끈을 따라 노란 불빛이 흐른다
+ let spark='';
+ if(mo&&f&&f.k==='by'){const mine=FLOW.shown.filter(n=>n.by===f.v);
+  const ids=[1,2,3,4].map(o=>mine.find(n=>FORDER[n.kind]===o)).filter(Boolean).map(n=>n.id);if(mine.some(n=>n.kind==='n4'))ids.push('big');
+  const segs=[];for(let i=0;i+1<ids.length;i++){const a=box(ids[i]),b=box(ids[i+1]);if(a&&b)segs.push(flowGeo(a,b)[0])}
+  if(segs.length)spark=`<g class="spark" opacity="0"><circle class="spark-halo" r="22"/><circle class="spark-halo" r="13"/><circle class="spark-dot" r="8"/><animateMotion dur="${(1.3*segs.length).toFixed(1)}s" repeatCount="indefinite" begin="indefinite" path="${segs.join(' ')}"/></g>`}
+ svg.innerHTML=layer.k.join('')+layer.b.join('')+layer.j.join('')+layer.hi.join('')+spark;
+ const sp=svg.querySelector('.spark');
+ if(sp)setTimeout(()=>{if(!sp.isConnected)return;sp.setAttribute('opacity','1');try{sp.querySelector('animateMotion').beginElement()}catch(e){}},Math.max(0,hiEnd));
 }
+// 두 쪽지를 잇는 곡선(a 에서 b 쪽으로). [경로, 시작점, 끝점]
+function flowGeo(a,b){
+ const h=(x1,y1,x2,y2)=>{const g=x2>=x1?1:-1,dx=Math.max(24,Math.abs(x2-x1)*.5);return [`M${x1} ${y1}C${x1+g*dx} ${y1} ${x2-g*dx} ${y2} ${x2} ${y2}`,[x1,y1],[x2,y2]]};
+ if(b.l>=a.r-2)return h(a.r,a.cy,b.l,b.cy);       // 오른쪽으로
+ if(a.l>=b.r-2)return h(a.l,a.cy,b.r,b.cy);       // 왼쪽으로
+ if(a.col===b.col){const x=Math.min(a.l,b.l)-34;return [`M${a.l} ${a.cy}C${x} ${a.cy} ${x} ${b.cy} ${b.l} ${b.cy}`,[a.l,a.cy],[b.l,b.cy]]} // 같은 칸: 왼쪽으로 휘어 잇기
+ if(b.t>=a.b-2){const dy=Math.max(24,(b.t-a.b)*.5);return [`M${a.cx} ${a.b}C${a.cx} ${a.b+dy} ${b.cx} ${b.t-dy} ${b.cx} ${b.t}`,[a.cx,a.b],[b.cx,b.t]]} // 좁은 화면: 아래로
+ const dy=Math.max(24,(a.t-b.b)*.5);return [`M${a.cx} ${a.t}C${a.cx} ${a.t-dy} ${b.cx} ${b.b+dy} ${b.cx} ${b.b}`,[a.cx,a.t],[b.cx,b.b]]}
 // 발표 모드 「한 화면에 맞추기」: 수사판을 조금 넓게 펼쳐 놓고(쪽지가 옆으로 더 들어가 높이가 줄어든다) 화면 높이에 맞게 줄인다.
 // 글씨가 읽히도록 60% 밑으로는 줄이지 않는다(학생이 많으면 조금 스크롤된다).
 function fitFlow(){const fit=document.getElementById('flowfit'),w=document.getElementById('flow');if(!fit||!w)return;
@@ -1214,7 +1268,7 @@ function render(){
  if(v==='teacher')fillQR();
  if(v==='teacher'||v==='flow')mountFlow();
 }
-window.addEventListener('hashchange',()=>{render();window.scrollTo(0,0);if(isT())Teacher.refresh();else Live.refresh()});
+window.addEventListener('hashchange',()=>{if(isT())FlowAnim.born={};render();window.scrollTo(0,0);if(isT())Teacher.refresh();else Live.refresh()});
 
 /* 시작: 연결 모드면 입장 상태를 확인하고, 실시간 채널에 붙고, 주기적으로 다시 불러온다 */
 render();
