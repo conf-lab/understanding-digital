@@ -341,7 +341,7 @@ const uuid=()=>{if(window.crypto&&crypto.randomUUID)try{return crypto.randomUUID
   const b=crypto.getRandomValues(new Uint8Array(16));b[6]=b[6]&15|64;b[8]=b[8]&63|128;const h=[...b].map(x=>x.toString(16).padStart(2,'0')).join('');
   return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20)};
 const blank=()=>({cid:uuid(),me:{name:'',group:'',code:'',joined:'',cls:''},m1:{cards:{},vote:'',reason:'',newq:''},m2:{posts:{},pledge:{a:'',b:'',c:''},newq:''},
-  m3:{kw:{1:'',2:'',3:'',4:''},words:[],sents:{},mode:'word',checked:false,sum:''},
+  m3:{kw:{1:'',2:'',3:'',4:''},words:[],sents:{},mode:'word',checked:false,ever:false,sum:''},
   m4:{sort:{},kw:'',q:{1:'',2:'',3:'',4:''},posted:false,newq:'',wish:'',likes:[],answers:{}},big:{stance:'',text:'',posted:false},sync:{}});
 const Store={
   load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.me){const b=blank(),o=Object.assign(b,s);o.me=Object.assign(blank().me,s.me);o.sync=o.sync||{};o.cid=o.cid||b.cid;return o}}catch(e){}return blank()},
@@ -551,7 +551,7 @@ const splitKw=s=>String(s||'').split(/[,،、\/\n]+/).map(x=>x.trim()).filter(Bo
 const done={
  1:()=>M1.every(c=>S.m1.cards[c.id]&&S.m1.cards[c.id].checked)&&!!S.m1.vote,
  2:()=>M2.every(p=>S.m2.posts[p.id]&&S.m2.posts[p.id].verdict!=null),
- 3:()=>S.m3.checked&&[1,2,3,4].some(i=>S.m3.kw[i].trim()),
+ 3:()=>(S.m3.checked||!!S.m3.ever)&&[1,2,3,4].some(i=>S.m3.kw[i].trim()),
  4:()=>SORT.every(s=>S.m4.sort[s.id])&&S.m4.posted,
  5:()=>CD().myAnswers>=ANSWER_GOAL,
  6:()=>!!(S.big&&S.big.posted) // 대질문에 나의 생각을 붙였는지
@@ -1259,17 +1259,19 @@ const A={
    else{S.me.joined='';Entry.msg='그런 학급 코드가 없어요. 선생님께 다시 여쭤보세요.'}}
   catch(e){Entry.msg='인터넷 연결을 확인하고 다시 눌러 주세요.'}
   Entry.busy=false;Store.save();softRender()},
- m1form(d){const c=card(d.c);c.forms=c.forms||[];const i=c.forms.indexOf(d.v);i<0?c.forms.push(d.v):c.forms.splice(i,1);c.checked=false},
- m1pick(d){card(d.c)[d.k]=d.v;card(d.c).checked=false},
+ // 확인을 한 번 누른 카드는 답을 고쳐도 확인 상태를 유지한다(✓ 표시는 고친 답 기준으로 바로 다시 보여 준다). 고치다 「해결」이 풀리는 일을 막는다.
+ m1form(d){const c=card(d.c);c.forms=c.forms||[];const i=c.forms.indexOf(d.v);i<0?c.forms.push(d.v):c.forms.splice(i,1)},
+ m1pick(d){card(d.c)[d.k]=d.v},
  m1check(d){card(d.c).checked=true},
  m1vote(d){S.m1.vote=d.v},
  m2find(d){post(d.p).found=true},
  m2chk(d){post(d.p).c[d.j]=d.v==='1'},
  m2ver(d){post(d.p).verdict=d.v==='1'},
  m3mode(d){S.m3.mode=d.v},
- m3word(d){if(S.m3.mode!=='word')return false;const i=S.m3.words.indexOf(d.id);i<0?S.m3.words.push(d.id):S.m3.words.splice(i,1);S.m3.checked=false},
- m3sent(d){if(S.m3.mode!=='sent')return false;S.m3.sents[d.p]=S.m3.sents[d.p]===+d.s?null:+d.s;S.m3.checked=false},
- m3check(){S.m3.checked=true},
+ // 견주어 본 뒤 표시를 고쳐도 결과를 바로 다시 보여 준다. 한 번 견주어 보면(ever) 「표시 지우기」를 해도 해결은 유지된다.
+ m3word(d){if(S.m3.mode!=='word')return false;const i=S.m3.words.indexOf(d.id);i<0?S.m3.words.push(d.id):S.m3.words.splice(i,1)},
+ m3sent(d){if(S.m3.mode!=='sent')return false;S.m3.sents[d.p]=S.m3.sents[d.p]===+d.s?null:+d.s},
+ m3check(){S.m3.checked=true;S.m3.ever=true},
  m3clear(){S.m3.words=[];S.m3.sents={};S.m3.checked=false},
  m3conn(d){S.m3.sum=(S.m3.sum?S.m3.sum.replace(/\s*$/,' '):'')+d.v+' '},
  m4sort(d){S.m4.sort[d.s]=d.v},
