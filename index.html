@@ -317,6 +317,17 @@ body.present main{padding-top:18px}
   .lane-notes .fnote{max-width:none}
   .flow-cols.bigcols,.bigboard{grid-template-columns:1fr}
 }
+/* 질문 게시판 크게 보기(교사, #wall) */
+.wall-stat{display:flex;flex-wrap:wrap;gap:10px}
+.wall-stat span{display:flex;align-items:baseline;gap:6px;background:var(--white);border:2px solid var(--ink);border-radius:12px;padding:4px 12px;font-size:15px}
+.wall-stat b{font-family:var(--display);font-weight:400;font-size:24px}
+.notes.wall{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:28px 22px;align-items:start;margin-top:10px}
+.notes.wall .qq{font-size:25px}
+.notes.wall .ans{font-size:19px}
+.notes.wall .ans .by{font-family:var(--body);font-size:13.5px;color:var(--muted)}
+.wall-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.wall-like{font-family:var(--display);font-size:15px;color:var(--red);background:var(--white);border:2px solid var(--red);border-radius:999px;padding:0 10px;white-space:nowrap}
+.wall-none{margin:0;font-size:14.5px;color:var(--muted)}
 /* 3차시 중심 내용 정리 예시 답안 */
 .ex{display:flex;flex-direction:column;gap:10px;background:var(--white);border:2px dashed var(--cd);border-radius:16px;padding:16px}
 .ex h3{margin:0}
@@ -1129,6 +1140,7 @@ V.teacher=()=>{
  <div class="tiles"><div class="tile" style="background:var(--lav)"><b>${td.n}</b>참여 학생</div>
   ${[1,2,3,4].map(n=>`<div class="tile" style="background:${COL[n]}"><b>${td.done[n]||0}</b>${n}차시 해결</div>`).join('')}
   <div class="tile"><b>${qs}</b>모인 질문</div><div class="tile" style="background:var(--lav)"><b>${td.bigs.length}</b>대질문 생각</div></div>
+ <div class="row"><a class="btn small show-go" href="#wall">질문 게시판 크게 보기 (질문 + 답)</a><button class="btn small show-go" data-act="showopen">▶ 수사판 상영</button></div>
 </section>
 ${td.live?`<section class="card"><h2>학생 입장 QR</h2><div class="qr"><div class="code" id="qr" role="img" aria-label="학생 입장 주소 QR 코드"></div>
  <div class="url"><p class="muted">학급 코드</p><p class="big-code">${esc(td.code)}</p><p class="muted" style="margin-top:8px">${esc(joinUrl(td.code))}</p>
@@ -1155,7 +1167,7 @@ ${td.live?`<section class="card"><h2>학생 입장 QR</h2><div class="qr"><div c
 ${td.live?`<section class="card"><h2>학생별 진행</h2>${td.students.length?`<div class="scroll"><table><thead><tr><th>모둠</th><th>별명</th>${[1,2,3,4].map(n=>`<th>${n}차시</th>`).join('')}<th class="n">게시판 답</th><th>마지막 저장</th></tr></thead><tbody>
  ${td.students.map(s=>`<tr><td>${esc(s.group)}</td><td>${esc(s.nick)}</td>${[1,2,3,4].map(n=>`<td><span class="dot ${s.done[n]?'on':''}" title="${s.done[n]?'해결':'아직'}"></span></td>`).join('')}<td class="n">${s.answers}</td><td>${fmtTime(s.at)}</td></tr>`).join('')}
  </tbody></table></div>`:'<p class="muted">아직 입장한 학생이 없습니다.</p>'}</section>`:''}
-<section class="card"><h2>질문 벽</h2>
+<section class="card"><div class="row" style="justify-content:space-between"><h2>질문 벽</h2><a class="btn small show-go" href="#wall">질문과 답 크게 보기</a></div>
  <div class="scroll"><table><thead><tr><th>차시</th><th>종류</th><th>질문</th><th>작성자</th><th class="n">도장</th></tr></thead><tbody>
  ${td.board.slice().sort((x,y)=>y.likes-x.likes).map(x=>`<tr><td>4</td><td><span class="tag">탐구 ${x.t}</span></td><td>${esc(x.q)}</td><td>${esc(x.by)}</td><td class="n">${x.likes}</td></tr>`).join('')}
  ${td.newqs.map(x=>`<tr><td>${x.m}</td><td><span class="tag new">새로운</span></td><td>${esc(x.q)}</td><td>${esc(x.by)}</td><td class="n">-</td></tr>`).join('')}
@@ -1397,6 +1409,29 @@ V.flow=()=>{
 ${flowTools(true)}${flowLegend}
 <p class="muted">발표할 때: → 또는 스페이스 = 다음 단계, ← = 이전 단계, Esc = 강조 끄기. 프레젠터 리모컨으로도 넘길 수 있어요.</p>`};
 
+/* 질문 게시판 크게 보기(교사 #wall): 탐구 질문 카드마다 친구들이 단 답을 함께 보여 준다. 학생이 답이나 도장을 남기면 자동으로 새로 고친다. */
+const WallUI={t:0,sort:'likes'};
+const WALL_SORT={likes:(a,b)=>b.likes-a.likes||b.ans.length-a.ans.length,ans:(a,b)=>b.ans.length-a.ans.length||b.likes-a.likes,none:(a,b)=>a.ans.length-b.ans.length||b.likes-a.likes};
+V.wall=()=>{
+ if(ONLINE&&!Teacher.data)return teacherLogin();
+ const td=TD(),all=td.board.map(b=>({...b,ans:b.ans||[],likes:b.likes||0}));
+ const ansN=all.reduce((s,b)=>s+b.ans.length,0),likeN=all.reduce((s,b)=>s+b.likes,0),wait=all.filter(b=>!b.ans.length).length;
+ const list=all.filter(b=>!WallUI.t||b.t===WallUI.t).sort(WALL_SORT[WallUI.sort]);
+ return `
+<section class="present-bar t5">
+ <div class="row" style="justify-content:space-between;align-items:flex-end">
+  <div><span class="label">질문 게시판 · ${td.live?esc(td.name||td.code):'<span class="demo">예시 데이터</span>'}</span><h1>우리 반 질문과 답</h1></div>
+  <div class="row"><button class="btn ghost small" data-act="flowfull">전체 화면</button><a class="btn ghost small" href="#teacher">선생님 화면으로</a></div></div>
+ <div class="wall-stat"><span><b>${all.length}</b>탐구 질문</span><span><b>${ansN}</b>친구의 답</span><span><b>${likeN}</b>좋은 질문 도장</span><span><b>${wait}</b>답을 기다리는 질문</span></div>
+ <div class="row">${[0,1,2,3,4].map(t=>chip('wallt',{v:t},t?t+'유형 ('+all.filter(b=>b.t===t).length+')':'전체',WallUI.t===t)).join('')}<span style="flex:1 1 12px"></span>
+  ${[['likes','도장 많은 순'],['ans','답 많은 순'],['none','답 없는 질문 먼저']].map(([k,l])=>chip('wallsort',{v:k},l,WallUI.sort===k)).join('')}${chip('flowanon',{},'별명 가리기',FlowUI.anon)}</div>
+</section>
+${list.length?`<div class="notes wall">${list.map(b=>`<div class="note n${b.t}"><div class="wall-top"><span class="kind">${b.t}. ${QTYPE[b.t]}</span>${b.likes?`<span class="wall-like">도장 ${b.likes}</span>`:''}</div>
+  <p class="qq">${esc(b.q)}</p><span class="by">${esc(fwho(b.by))}${b.kw?' · 「'+esc(b.kw)+'」':''}</span>
+  ${b.ans.length?b.ans.map(a=>`<p class="ans">${esc(a.text)}${a.by?` <span class="by">(${esc(fwho(a.by))})</span>`:''}</p>`).join(''):'<p class="wall-none">아직 답이 없어요</p>'}</div>`).join('')}</div>`
+ :`<section class="card"><p class="muted">${all.length?'이 유형의 질문은 아직 없어요.':'아직 붙은 탐구 질문이 없어요. 학생들이 4차시 ②에서 「질문 게시판에 붙이기」를 누르면 여기에 모여요.'}</p></section>`}
+<p class="muted">학생이 답을 달거나 도장을 찍으면 자동으로 새로 고칩니다. 답 원문은 CSV에도 들어 있습니다.</p>`};
+
 /* ===== 질문 수사판 상영 =====
    ① 오프닝(약 10초): 물음표 하나가 터져 우리 반 질문들이 별처럼 흩어지고, 숫자가 올라가고, 모두 한 점으로 모여 「질문 수사판」 제목이 찍힌다.
    ② 학생 질문 여정: 한 학생씩 첫 궁금증 → 핵심 낱말 → 탐구 질문 → 새로운 질문 → 대질문 생각을 크게 꽂고 빨간 끈으로 잇는다.
@@ -1601,6 +1636,8 @@ const A={
  m3conn(d){S.m3.sum=(S.m3.sum?S.m3.sum.replace(/\s*$/,' '):'')+d.v+' '},
  m3ex(){if(!M3UI.ex&&!String(S.m3.sum||'').trim()){M3UI.msg='먼저 중심 문장을 접속어로 이어 써 보고 눌러요.';return}M3UI.msg='';M3UI.ex=!M3UI.ex},
  tex(){TUI.ex=!TUI.ex},
+ wallt(d){WallUI.t=+d.v},
+ wallsort(d){WallUI.sort=d.v},
  showopen(){theaterOpen();return 'keep'},
  m4sort(d){S.m4.sort[d.s]=d.v},
  m4kw(d){S.m4.kw=d.v},
@@ -1677,14 +1714,14 @@ document.addEventListener('keydown',e=>{if(route()!=='flow'||typing()||e.altKey|
  if(!act)return;e.preventDefault();A[act]();softRender()});
 
 const whoText=()=>S.me.name?myName()+' 탐정'+(Sync.ready()?' · '+S.me.joined:''):'';
-const ROUTES={'home':'home','mission-1':'m1','mission-2':'m2','mission-3':'m3','mission-4':'m4','teacher':'teacher','flow':'flow','big':'big'};
+const ROUTES={'home':'home','mission-1':'m1','mission-2':'m2','mission-3':'m3','mission-4':'m4','teacher':'teacher','flow':'flow','big':'big','wall':'wall'};
 const TC={home:'var(--white)',1:'var(--sky)',2:'var(--peach)',3:'var(--lemon)',4:'var(--mint)'};
 const route=()=>ROUTES[(location.hash||'#home').slice(1)]||'home';
-const isT=()=>route()==='teacher'||route()==='flow'; // 선생님 화면(교사 자료를 불러오는 화면)
+const isT=()=>route()==='teacher'||route()==='flow'||route()==='wall'; // 선생님 화면(교사 자료를 불러오는 화면)
 function render(){
  const v=route();
- const app=document.getElementById('app');app.className={m1:'t1',m2:'t2',m3:'t3',m4:'t4',teacher:'t5',flow:'t5 wide',big:'t5'}[v]||'';
- document.body.classList.toggle('present',v==='flow');
+ const app=document.getElementById('app');app.className={m1:'t1',m2:'t2',m3:'t3',m4:'t4',teacher:'t5',flow:'t5 wide',big:'t5',wall:'t5 wide'}[v]||'';
+ document.body.classList.toggle('present',v==='flow'||v==='wall');
  // 연결 모드인데 아직 입장하지 않았으면 사건 화면 위에 알려 준다
  const remind=ONLINE&&(/^m\d$/.test(v)||v==='big')&&!Sync.ready()?`<section class="card" style="--c:var(--peach)">${say('think','아직 입장하지 않았어. 첫 화면에서 학급 코드, 모둠, 별명을 쓰고 「입장하기」를 누르면 내 기록이 반 친구들과 모여. <a href="#home">명찰 채우러 가기</a>','oops')}</section>`:'';
  app.innerHTML=remind+V[v]();
