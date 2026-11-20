@@ -546,7 +546,8 @@ const chip=(act,data,label,on,cls)=>`<button class="chip ${cls||''}" data-act="$
 function bars(rows,max){max=max||Math.max(1,...rows.map(r=>r.n));
   return `<div class="bars">${rows.map(r=>`<div class="bar ${r.me?'me':''}"><span>${esc(r.label)}</span><span class="track"><span class="fill" style="width:${Math.round(r.n/max*100)}%"></span></span><span class="n">${r.n}${r.unit||''}</span></div>`).join('')}</div>`}
 const myName=()=>S.me.name?(S.me.group?S.me.group+'모둠 ':'')+S.me.name:'나';
-const splitKw=s=>String(s||'').split(/[,،、\/\n]+/).map(x=>x.trim()).filter(Boolean);
+const splitKw=s=>String(s||'').split(/[,،、\/\n]+/).map(x=>x.trim()).filter(Boolean); const kwKey=w=>String(w).replace(/\s+/g,'');
+/* 3차시 낱말 막대: 띄어쓰기만 다른 낱말(지구 온난화·지구온난화)은 하나로 묶고, 가장 많이 쓴 모양을 이름으로 쓴다. 많이 고른 6개만 */ function kwRows(m){const g={};Object.entries(m||{}).forEach(([k,n])=>{const key=kwKey(k),x=g[key]=g[key]||{key,label:k,n:0,top:0};x.n+=n;if(n>x.top){x.top=n;x.label=k}});return Object.values(g).sort((a,b)=>b.n-a.n).slice(0,6).map(x=>({key:x.key,label:x.label,n:x.n}))}
 
 const done={
  1:()=>M1.every(c=>S.m1.cards[c.id]&&S.m1.cards[c.id].checked)&&!!S.m1.vote,
@@ -775,10 +776,10 @@ ${banner(3,'핵심 낱말 사냥','글의 핵심 낱말과 문단별 중심 문�
  <p class="muted">낱말과 낱말 사이는 쉼표로 나누어 적어요.</p>
  <div class="grid">${[1,2,3,4].map(i=>`<label class="f" for="f-m3-kw-${i}">${i}문단${inp('m3.kw.'+i,'낱말, 낱말')}</label>`).join('')}</div>
  <button class="btn" data-act="rerender">우리 반 결과 보기</button>
- ${any?`<div class="grid">${[1,2,3,4].map(i=>{const mine=splitKw(S.m3.kw[i]);const m=d.kw[i]||{};
-   const rows=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,n])=>({label:k,n,me:mine.includes(k)}));
+ ${any?`<div class="grid">${[1,2,3,4].map(i=>{const mine=splitKw(S.m3.kw[i]).map(kwKey);
+   const rows=kwRows(d.kw[i]).map(r=>({label:r.label,n:r.n,me:mine.includes(r.key)}));
    return `<div><h3>${i}문단 ${dtag(d)}</h3><div style="margin-top:10px">${rows.length?bars(rows,Math.max(1,d.n)):`<p class="muted">${d.loading?'불러오는 중…':'아직 올린 낱말이 없어요.'}</p>`}</div></div>`}).join('')}</div>
-   ${say('think','빨간 줄무늬 막대가 내가 고른 낱말이야. 친구들과 다르게 골랐다면 까닭을 이야기해 보자.')}`:''}
+   ${say('think','빨간 줄무늬 막대가 내가 고른 낱말이야. 친구들과 다르게 골랐다면 까닭을 이야기해 보자.')}`:'<p class="muted">낱말을 한 문단이라도 올리면 우리 반 결과가 나타나요.</p>'}
 </section>
 <section class="card tape">
  ${sec(2,'연습 사건 · 수업을 위해 재구성한 글')}
@@ -893,7 +894,7 @@ function TD(){
   const st={};rows.forEach(r=>{const x=st[r.client]=st[r.client]||{group:r.group,nick:r.nick,done:{},answers:0,at:r.at};if(r.item==='progress')x.done=r.value;if(r.at>x.at)x.at=r.at});
   t.answers.forEach(a=>{if(st[a.client])st[a.client].answers++});
   const qById=Object.fromEntries(s.board.map(b=>[b.id,b]));
-  return {live:true,code:s.code,name:s.name,n:s.participants,done:s.done,votes:s.votes,trust:s.trust,groups:s.groups,board:s.board,
+  return {live:true,code:s.code,name:s.name,n:s.participants,done:s.done,votes:s.votes,trust:s.trust,kw:s.kw||{},groups:s.groups,board:s.board,
    students:Object.values(st).sort(byGroup),
    newqs:rows.filter(r=>r.item==='newq').map(r=>({by:r.who,q:r.value.text,m:r.mission})),
    wishes:rows.filter(r=>r.item==='wish').map(r=>({by:r.who,text:r.value.text})),
@@ -903,7 +904,7 @@ function TD(){
    csv:rows.slice().sort(byGroup).map(r=>[r.group,r.nick,String(r.mission||''),ITEM[r.item]||r.item,itemText(r.item,r.value),fmtTime(r.at)])
     .concat(t.answers.map(a=>{const q=qById[a.question];const w=(t.rows.find(r=>r.client===a.client)||{});return [w.group||'',w.nick||a.nick,'4','게시판 답'+(q?' → '+q.q:''),a.text,fmtTime(a.at)]}))}}
  const d=CD(),me=S.me.name?myName():'이 기기',items=Sync.items();
- return {live:false,n:d.n,done:d.done,votes:d.votes,trust:d.trust,groups:d.groups,board:d.board,students:[],
+ return {live:false,n:d.n,done:d.done,votes:d.votes,trust:d.trust,kw:d.kw,groups:d.groups,board:d.board,students:[],
   newqs:[[S.m1.newq,1],[S.m2.newq,2],[S.m4.newq,4]].filter(x=>x[0].trim()).map(([q,m])=>({by:me,q,m})).concat(NEWQ_SEED),
   wishes:(S.m4.wish.trim()?[{by:me,text:S.m4.wish}]:[]).concat(WISH_SEED.map(t=>({by:'예시',text:t}))),
   reasons:S.m1.vote?[{v:S.m1.vote,by:me,text:S.m1.reason}]:[],
@@ -988,6 +989,8 @@ ${td.live?`<section class="card"><h2>학생 입장 QR</h2><div class="qr"><div c
  <div class="card t3"><h3>3차시 · 사과 글 연습</h3>${td.practice.length?bars([3,2,1,0].map(m=>({label:'중심 문장 '+m+'/3',n:td.practice.filter(x=>x.main===m).length,unit:'명'}))):''}<p class="advice">${adv[3]}</p></div>
  <div class="card t4"><h3>4차시 · 탐구 질문 유형</h3>${bars(byType)}<p class="advice">${adv[4]}</p></div>
 </section>
+<section class="card t3"><h2>3차시 · 문단별 핵심 낱말 ${td.live?tag:'<span class="demo">예시 데이터</span>'}</h2><p class="muted">학생들이 올린 낱말을 많이 고른 순서로 보여 줍니다. 띄어쓰기만 다른 낱말은 하나로 묶었습니다. 「우리 반은 뭘 골랐을까?」 예측을 들은 뒤 공개하세요.</p>
+ <div class="grid">${[1,2,3,4].map(i=>{const rows=kwRows((td.kw||{})[i]).map(r=>({label:r.label,n:r.n,unit:'명'}));return `<div><h3>${i}문단</h3><div style="margin-top:10px">${rows.length?bars(rows,Math.max(1,td.n)):'<p class="muted">아직 올린 낱말이 없어요.</p>'}</div></div>`}).join('')}</div></section>
 <section class="card t1"><h2>1차시 · 고른 까닭 모아 보기</h2><p class="muted">적게 고른 것부터 보여 줍니다. 소수 의견을 먼저 발표시키면 토의가 살아납니다.</p>
  <div class="grid">${vOrder.map(k=>{const rs=td.reasons.filter(r=>r.v===k&&r.text.trim());return `<div class="reasons"><h3>${k} <span class="muted">${td.votes[k]||0}명</span></h3>
   ${rs.length?rs.map(r=>`<p>${esc(r.text)} <span class="muted">(${esc(r.by)})</span></p>`).join(''):'<span class="muted">적은 까닭이 아직 없어요.</span>'}</div>`}).join('')}</div></section>
