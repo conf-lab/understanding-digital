@@ -317,6 +317,133 @@ body.present main{padding-top:18px}
   .lane-notes .fnote{max-width:none}
   .flow-cols.bigcols,.bigboard{grid-template-columns:1fr}
 }
+/* 3차시 중심 내용 정리 예시 답안 */
+.ex{display:flex;flex-direction:column;gap:10px;background:var(--white);border:2px dashed var(--cd);border-radius:16px;padding:16px}
+.ex h3{margin:0}
+.ex-step{margin:4px 0 0;font-family:var(--display);font-size:15.5px;color:var(--muted)}
+.ex-mains{display:grid;gap:8px}
+.ex-main{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:baseline;background:var(--paper);border-radius:10px;padding:8px 12px}
+.ex-main b{font-family:var(--display);font-weight:400;background:var(--ink);color:var(--white);border-radius:999px;padding:0 10px;font-size:14px;white-space:nowrap}
+.ex-why{display:flex;flex-wrap:wrap;gap:8px}
+.ex-why span{background:var(--lav);border-radius:10px;padding:6px 10px;font-size:15px}
+.ex-c{font-style:normal;font-family:var(--display);background:var(--lemon);border:1.5px solid var(--ink);border-radius:8px;padding:0 6px}
+.ex-ans{margin:0;font-family:var(--hand);font-weight:700;font-size:21px;line-height:1.7;background:var(--paper);border-radius:10px;padding:10px 14px}
+.ex-mine{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ex-mine b{font-family:var(--display);font-weight:400}
+.ex-mine span{border:1.5px solid var(--ink);border-radius:999px;padding:1px 10px;font-size:14.5px;background:var(--white)}
+.ex-mine span.ok{background:var(--mint)}
+.show-go{background:var(--ink);color:var(--white)}
+
+/* ===== 질문 수사판 상영(사례 발표용 전체 화면 연출): 오프닝 → 학생 여정 → 전체 흐름 =====
+   발표 화면이라 어두운 극장 배경을 쓴다(앱의 밝은 화면은 그대로). 움직임은 질문 수사판 예외 안에서만. */
+.theater{position:fixed;inset:0;z-index:200;background:radial-gradient(ellipse at 50% 42%,#2E2650 0%,#191427 58%,#0B0910 100%);color:#FFF8E8;overflow:hidden;cursor:pointer;-webkit-user-select:none;user-select:none;font-family:var(--body)}
+.theater::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:4;background:radial-gradient(ellipse at center,transparent 52%,rgba(0,0,0,.6) 100%)}
+.theater:focus{outline:none}
+.th-stage{position:absolute;inset:0;transition:opacity .42s ease}
+.th-stage.out{opacity:0}
+.th-bar{position:absolute;left:0;right:0;bottom:0;z-index:6;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px 18px;background:linear-gradient(transparent,rgba(0,0,0,.6));opacity:0;transition:opacity .25s;cursor:default}
+.theater:hover .th-bar,.th-bar:focus-within{opacity:1}
+.th-bar button{font:inherit;font-family:var(--display);font-size:15px;color:#FFF8E8;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.35);border-radius:999px;padding:5px 14px;cursor:pointer}
+.th-bar button[aria-pressed="true"]{background:#FFE98A;color:var(--ink)}
+.th-bar button:disabled{opacity:.35;cursor:default}
+.th-bar .sp{flex:1}
+.th-bar .cnt{font-family:var(--display);font-size:15px;opacity:.85}
+.th-tag{position:absolute;top:14px;right:18px;z-index:6;font-size:13px;opacity:.6}
+/* 오프닝 */
+.op{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden}
+.op>*{grid-area:1/1}
+.op-field{position:absolute;inset:0}
+.op-spot{position:absolute;width:52vmin;height:52vmin;left:-60vmin;top:calc(50% - 26vmin);border-radius:50%;background:radial-gradient(circle,rgba(255,233,138,.3),rgba(255,233,138,.07) 55%,transparent 70%);opacity:0}
+.op.p-spot .op-spot{opacity:1;left:calc(50% - 26vmin);transition:left 1.3s cubic-bezier(.3,.7,.2,1),opacity .4s}
+.op-q{font-family:var(--display);font-size:min(46vmin,420px);line-height:1;color:#FFE98A;text-shadow:0 0 40px rgba(255,210,63,.75),0 0 120px rgba(255,210,63,.45);opacity:0;transform:scale(.3);filter:blur(14px);z-index:1}
+.op.p-q .op-q{opacity:1;transform:scale(1);filter:blur(0);transition:opacity 1s,transform 1.1s cubic-bezier(.2,.9,.2,1.15),filter 1s;animation:shBeat .8s 1.15s ease-in-out}
+.op.p-burst .op-q{opacity:0;transform:scale(2.6);filter:blur(6px);transition:opacity .6s ease-in,transform .7s ease-in,filter .6s;animation:none}
+.op-p{position:absolute;left:50%;top:50%;white-space:nowrap;font-family:var(--hand);font-weight:700;font-size:20px;color:var(--pc);text-shadow:0 0 14px var(--pc);opacity:0;transform:translate(-50%,-50%) scale(0);transition:transform 1.7s cubic-bezier(.12,.85,.25,1) var(--d),opacity .8s var(--d)}
+.op-p>span{display:block;animation:shDrift var(--dr) ease-in-out infinite alternate}
+.op.p-burst .op-p{opacity:var(--o);transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(var(--s)) rotate(var(--r))}
+.op.p-dim .op-p{opacity:calc(var(--o) * .28)}
+.op.p-converge .op-p{opacity:0;transform:translate(-50%,-50%) scale(.1);transition:transform .85s cubic-bezier(.6,0,.85,.3) var(--d2),opacity .85s ease-in var(--d2)}
+.op-lines{z-index:2;text-align:center;pointer-events:none;transition:transform .8s cubic-bezier(.2,.8,.2,1),opacity .5s}
+.op-lines p{margin:0;font-family:var(--display);font-size:min(8vmin,76px);line-height:1.25;opacity:0;transform:translateY(24px);filter:blur(6px);transition:opacity .9s,transform .9s cubic-bezier(.2,.8,.2,1),filter .9s}
+.op-lines .l2{color:#FFE98A}
+.op.p-l1 .op-lines .l1,.op.p-l2 .op-lines .l2{opacity:1;transform:none;filter:none}
+.op.p-stats .op-lines{transform:translateY(-15vh)}
+.op-stats{z-index:2;display:flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:min(1.6vw,18px);transform:translateY(14vh);transition:opacity .5s}
+.op-st{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:min(13vw,150px);padding:12px 14px;border:2px solid rgba(255,248,232,.45);border-radius:14px;background:rgba(255,255,255,.07);opacity:0;transform:translateY(16px);transition:opacity .5s var(--d),transform .5s var(--d)}
+.op.p-stats .op-st{opacity:1;transform:none}
+.op-st b{font-family:var(--display);font-weight:400;font-size:min(7vmin,64px);line-height:1;color:#FFE98A}
+.op-st small{font-size:min(2.2vmin,18px);opacity:.88}
+.op-ar{font-family:var(--display);font-size:min(4vmin,34px);color:var(--red);opacity:0;transition:opacity .4s var(--d)}
+.op.p-stats .op-ar{opacity:1}
+.op.p-converge .op-lines,.op.p-converge .op-stats,.op.p-converge .op-spot{opacity:0;transition:opacity .5s}
+.op-flash{position:absolute;inset:0;background:radial-gradient(circle,#FFF8E8 0%,rgba(255,233,138,.6) 28%,transparent 68%);opacity:0;pointer-events:none;z-index:3}
+.op.p-title .op-flash{animation:shFlash 1.1s ease-out}
+.op-title{z-index:3;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;opacity:0;transform:scale(1.5);filter:blur(10px)}
+.op.p-title .op-title{opacity:1;transform:none;filter:none;transition:opacity .8s .15s,transform 1s .15s cubic-bezier(.2,.9,.2,1),filter .8s .15s}
+.op-cls{font-family:var(--display);font-size:min(3.4vmin,30px);color:#FFE98A;letter-spacing:.12em}
+.op-title h1{margin:0;font-family:var(--display);font-weight:400;font-size:min(13vmin,128px);line-height:1.05;color:#FFF8E8;text-shadow:0 6px 0 #7C62DB,0 0 50px rgba(124,98,219,.85)}
+.op-title p{margin:0;font-size:min(3.4vmin,30px);opacity:.92}
+.op-stamp{margin-top:10px;font-family:var(--display);font-size:min(4.6vmin,40px);color:var(--red);border:4px solid var(--red);border-radius:12px;padding:4px 18px;opacity:0;transform:rotate(-8deg)}
+.op.p-stamp .op-stamp{animation:shStamp .45s cubic-bezier(.3,1.6,.5,1) forwards}
+/* 학생 여정 */
+.jr{position:absolute;inset:0;display:flex;flex-direction:column;padding:4.5vh 4vw 8vh}
+.jr-h{display:flex;align-items:baseline;gap:8px 18px;flex-wrap:wrap}
+.jr-no{font-family:var(--display);font-size:min(2.4vmin,20px);color:#FFE98A;border:1.5px solid rgba(255,233,138,.6);border-radius:999px;padding:2px 12px}
+.jr-h h2{margin:0;font-family:var(--display);font-weight:400;font-size:min(7.5vmin,68px);line-height:1.1;animation:shUp .7s cubic-bezier(.2,.8,.2,1) both}
+.jr-sub{font-size:min(2.6vmin,22px);opacity:.8;animation:shUp .7s .15s both}
+.jr-track{position:relative;flex:1;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:min(2.6vw,38px);align-items:center;padding:2vh 0}
+.jr-svg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.jr-c{position:relative;z-index:1;display:flex;flex-direction:column;gap:10px;padding:min(2.6vmin,24px) min(1.8vmin,16px) min(1.8vmin,16px);background:var(--kc);color:var(--ink);border-radius:6px;box-shadow:0 14px 30px rgba(0,0,0,.45);min-width:0;opacity:0;animation:shPin .75s cubic-bezier(.2,1.3,.4,1) var(--d) both}
+.jr-c:nth-of-type(odd){margin-bottom:min(20vh,170px)}
+.jr-c:nth-of-type(even){margin-top:min(20vh,170px)}
+.jr-c::before{content:"";position:absolute;top:-10px;left:50%;margin-left:-9px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FF9C94,#D93A33 62%);border:2px solid var(--ink)}
+.jr-tag{align-self:flex-start;max-width:100%;font-family:var(--display);font-size:min(2vmin,16px);line-height:1.3;background:rgba(255,255,255,.88);border:1.5px solid var(--ink);border-radius:8px;padding:2px 8px}
+.jr-c p{margin:0;font-family:var(--hand);font-weight:700;font-size:var(--fs);line-height:1.3;overflow-wrap:anywhere}
+.jr-c small{font-size:min(1.9vmin,15px);color:var(--muted);line-height:1.35}
+.jr-like{align-self:flex-start;font-family:var(--display);font-size:min(1.9vmin,15px);color:var(--red)}
+.jr-c.jc-kw{border:3px solid var(--ink);border-radius:22px;align-items:center;text-align:center}
+.jr-c.jc-kw p{font-family:var(--display);font-weight:400}
+.jr-c.jc-big{border:3px solid var(--ink);border-radius:22px;animation:shPin .75s cubic-bezier(.2,1.3,.4,1) var(--d) both,shGlow 2.2s ease-out calc(var(--d) + .8s) infinite}
+.jr-str{fill:none;stroke:var(--red);stroke-width:4;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:shDraw .8s ease-in-out var(--d) forwards;filter:drop-shadow(0 0 6px rgba(238,75,72,.75))}
+.jr-pin{fill:#FFE98A;stroke:var(--ink);stroke-width:2;opacity:0;animation:shShow .3s var(--d) forwards}
+.jr-prog{position:absolute;left:0;bottom:0;height:5px;width:0;background:#FFE98A;z-index:5;animation:shProg var(--t) linear forwards}
+.theater.paused .jr-prog{display:none}
+/* 전체 흐름 */
+.fin{position:absolute;inset:0}
+.fin-zoom{position:absolute;inset:0;transform-origin:68% 52%;animation:shZoom 26s ease-in-out forwards}
+.fin-svg{position:absolute;left:0;top:0;overflow:visible}
+.fin-e{fill:none;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:shDraw 1.2s ease-in-out var(--d) forwards}
+.fin-e.j{stroke:rgba(238,75,72,.78);stroke-width:1.7}
+.fin-e.k{stroke:rgba(110,220,170,.7);stroke-width:1.3}
+.fin-e.b{stroke:rgba(255,210,63,.8);stroke-width:2}
+.fin-n{position:absolute;box-sizing:border-box;border-radius:3px;background:var(--kc);color:var(--ink);font-family:var(--hand);font-weight:700;line-height:1.15;padding:1px 4px;overflow:hidden;box-shadow:0 3px 8px rgba(0,0,0,.4);opacity:0;animation:shPop .5s cubic-bezier(.2,1.3,.4,1) var(--d) both}
+.fin-n.fhub{border-radius:999px;font-family:var(--display);font-weight:400;text-align:center;border:2px solid var(--ink);display:grid;place-items:center;white-space:nowrap}
+.fin-big{position:absolute;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;gap:12px;background:var(--lav);color:var(--ink);border:4px solid var(--ink);border-radius:26px;padding:22px;opacity:0;animation:shPop .9s cubic-bezier(.2,1.3,.4,1) var(--d) both,shGlow 2.4s ease-out calc(var(--d) + 1s) infinite}
+.fin-big .label{align-self:flex-start}
+.fin-big b{font-family:var(--display);font-weight:400;font-size:min(3.6vmin,34px);line-height:1.3}
+.fin-big small{font-family:var(--display);font-size:min(2.2vmin,19px);color:var(--lav-d)}
+.fin-head{position:absolute;font-family:var(--display);font-size:min(2.1vmin,18px);color:rgba(255,248,232,.85);transform:translateX(-50%);white-space:nowrap;opacity:0;animation:shShow .6s var(--d) forwards}
+.fin-cap{position:absolute;left:0;right:0;top:3vh;z-index:3;text-align:center;font-family:var(--display);opacity:0;animation:shUp 1s var(--d) both}
+.fin-cap h2{margin:0;font-weight:400;font-size:min(5.4vmin,52px);color:#FFF8E8;text-shadow:0 0 30px rgba(124,98,219,.9)}
+.fin-cap p{margin:4px 0 0;font-size:min(2.5vmin,22px);color:#FFE98A}
+.fin-spark{fill:#FFF3B0;filter:drop-shadow(0 0 6px #FFD23F)}
+/* 다시 그리기(창 크기 바뀜)·동작 줄이기: 움직임 없이 끝 모습만 */
+.still *{animation:none!important;transition:none!important}
+.still .jr-c,.still .fin-n,.still .fin-big,.still .fin-cap,.still .fin-head,.still .jr-pin,.still .jr-h h2,.still .jr-sub,.still .op.p-stamp .op-stamp{opacity:1}
+.still .jr-str,.still .fin-e{stroke-dashoffset:0}
+.still .jr-prog{display:none}
+@keyframes shBeat{0%,100%{scale:1}45%{scale:1.13}}
+@keyframes shDrift{from{transform:translate(0,0)}to{transform:translate(var(--fx),var(--fy))}}
+@keyframes shFlash{0%{opacity:0;transform:scale(.2)}25%{opacity:1}100%{opacity:0;transform:scale(1.8)}}
+@keyframes shStamp{from{opacity:0;transform:rotate(-8deg) scale(2.6)}to{opacity:1;transform:rotate(-8deg) scale(1)}}
+@keyframes shUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes shPin{from{opacity:0;transform:translateY(-40px) scale(.7) rotate(-8deg)}to{opacity:1;transform:rotate(var(--rot,0deg))}}
+@keyframes shGlow{0%{box-shadow:0 0 0 0 rgba(255,233,138,.75),0 14px 30px rgba(0,0,0,.45)}100%{box-shadow:0 0 0 44px rgba(255,233,138,0),0 14px 30px rgba(0,0,0,.45)}}
+@keyframes shDraw{to{stroke-dashoffset:0}}
+@keyframes shShow{to{opacity:1}}
+@keyframes shProg{to{width:100%}}
+@keyframes shPop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
+@keyframes shZoom{to{transform:scale(1.035)}}
 </style>
 </head>
 <body>
@@ -489,6 +616,11 @@ const APPLE=[
 ];
 const APPLE_KEY=['기후','변화','사과','북쪽','서늘한','기온','노력'];
 const APPLE_MAIN={0:0,1:0,2:1};
+// 중심 내용 정리 예시 답안: 교과서 24쪽처럼 문단별 중심 문장을 접속어로 잇는다. 교과서 글은 옮기지 않고 위 사과 연습 글로 만든다.
+const M3_EX=[{s:APPLE[0][APPLE_MAIN[0]]},{c:'또한',why:'1문단 내용에 2문단 내용을 덧붙일 때'},{s:APPLE[1][APPLE_MAIN[1]]},{c:'따라서',why:'앞의 내용을 바탕으로 글을 마무리할 때'},{s:APPLE[2][APPLE_MAIN[2]].replace(/^그래서\s*/,'')}];
+const M3_HINT={1:['북쪽','지역','산지'],2:['서늘'],3:['대비','노력','품종']}; // 내 정리에 문단별 중심 내용이 들어갔는지 살피는 낱말
+const M3_CONN=['그래서','또한','따라서','그리고','그러므로','왜냐하면','하지만','그러나'];
+const M3UI={ex:false,msg:''},TUI={ex:false}; // 예시 답안 펼침(학생 화면·선생님 화면). 기록하지 않는 화면 상태
 
 const SORT=[
  {id:'s1',q:'벼는 어떤 환경에서 잘 자랄까?',a:'t'},
@@ -770,6 +902,18 @@ ${all?`<section class="card tape" style="background:var(--c)"><div class="row">$
  <a class="btn" href="#mission-3">3차시 사건으로 가기</a></section>`};
 
 /* ---- 3차시 ---- */
+// 예시 답안(교과서 24쪽 방식): ① 문단별 중심 문장 → ② 관계에 맞는 접속어 → ③ 이어서 중심 내용 정리
+function m3Example(){return `<div class="ex"><h3>예시 답안 · 중심 문장을 접속어로 이어 중심 내용 정리하기</h3>
+ <p class="ex-step">① 문단마다 중심 문장을 찾아요</p>
+ <div class="ex-mains">${[0,1,2].map(p=>`<div class="ex-main"><b>${p+1}문단</b><span>${esc(APPLE[p][APPLE_MAIN[p]])}</span></div>`).join('')}</div>
+ <p class="ex-step">② 문장 사이의 관계에 알맞은 접속어를 골라요</p>
+ <div class="ex-why">${M3_EX.filter(x=>x.c).map(x=>`<span><i class="ex-c">${x.c}</i> ${x.why}</span>`).join('')}</div>
+ <p class="ex-step">③ 중심 문장을 접속어로 이어 글 전체의 중심 내용을 정리해요</p>
+ <p class="ex-ans">${M3_EX.map(x=>x.c?`<i class="ex-c">${x.c}</i>`:esc(x.s)).join(' ')}</p>
+ <p class="muted">3문단 중심 문장의 「그래서」는 글 전체를 마무리하는 「따라서」로 바꾸어 이었어요. 접속어는 하나만 정답이 아니에요. 문장 사이의 관계에 알맞으면 돼요.</p></div>`}
+// 내 정리 살펴보기: 문단별 중심 내용과 접속어가 들어갔는지
+function m3Mine(){const t=S.m3.sum||'',has=p=>M3_HINT[p].some(w=>t.includes(w)),cs=M3_CONN.filter(c=>t.includes(c));
+ return `<div class="ex-mine"><b>내 정리</b>${[1,2,3].map(p=>`<span class="${has(p)?'ok':''}">${p}문단 중심 내용 ${has(p)?'✓':'?'}</span>`).join('')}<span class="${cs.length?'ok':''}">접속어 ${cs.length?cs.join('·'):'아직 없음'}</span></div>`}
 V.m3=()=>{
  const any=[1,2,3,4].some(i=>S.m3.kw[i].trim());const d=CD();
  const hit=S.m3.words.filter(w=>APPLE_KEY.some(k=>w.split('|')[1].startsWith(k)));
@@ -802,6 +946,9 @@ ${banner(3,'핵심 낱말 사냥','글의 핵심 낱말과 문단별 중심 문�
  <label class="f" for="f-m3-sum">중심 문장을 이어서 글 전체의 중심 내용을 정리해요
   <span class="row">${['그래서','또한','따라서'].map(c=>`<button class="chip" data-act="m3conn" data-v="${c}">${c}</button>`).join('')}<span class="h">누르면 접속어가 들어가요.</span></span>
   ${inp('m3.sum','중심 문장을 접속어로 이어 보세요.',true)}</label>
+ <div class="row"><button class="btn ghost small" data-act="m3ex">${M3UI.ex?'예시 답안 접기':'예시 답안과 견주어 보기'}</button><span class="h">내 정리를 먼저 쓰고 눌러요.</span></div>
+ ${M3UI.msg?`<p class="entry bad">${M3UI.msg}</p>`:''}
+ ${M3UI.ex?m3Mine()+m3Example():''}
  <a class="btn" href="#mission-4">4차시 사건으로 가기</a>
 </section>`};
 
@@ -999,6 +1146,8 @@ ${td.live?`<section class="card"><h2>학생 입장 QR</h2><div class="qr"><div c
 </section>
 <section class="card t3"><h2>3차시 · 문단별 핵심 낱말 ${td.live?tag:'<span class="demo">예시 데이터</span>'}</h2><p class="muted">학생들이 올린 낱말을 많이 고른 순서로 보여 줍니다. 띄어쓰기만 다른 낱말은 하나로 묶었습니다. 「우리 반은 뭘 골랐을까?」 예측을 들은 뒤 공개하세요.</p>
  <div class="grid">${[1,2,3,4].map(i=>{const rows=kwRows((td.kw||{})[i]).map(r=>({label:r.label,n:r.n,unit:'명'}));return `<div><h3>${i}문단</h3><div style="margin-top:10px">${rows.length?bars(rows,Math.max(1,td.n)):'<p class="muted">아직 올린 낱말이 없어요.</p>'}</div></div>`}).join('')}</div></section>
+<section class="card t3"><div class="row" style="justify-content:space-between"><h2>3차시 · 중심 내용 정리 예시 답안</h2><button class="btn ghost small" data-act="tex">${TUI.ex?'접기':'펼쳐서 함께 보기'}</button></div>
+ <p class="muted">교과서 24쪽처럼 문단별 중심 문장을 접속어로 잇는 과정을 사과 연습 글로 보여 줍니다. 학생 화면에서는 자기 정리를 쓴 뒤에 「예시 답안과 견주어 보기」로 열 수 있습니다.</p>${TUI.ex?m3Example():''}</section>
 <section class="card t1"><h2>1차시 · 고른 까닭 모아 보기</h2><p class="muted">적게 고른 것부터 보여 줍니다. 소수 의견을 먼저 발표시키면 토의가 살아납니다.</p>
  <div class="grid">${vOrder.map(k=>{const rs=td.reasons.filter(r=>r.v===k&&r.text.trim());return `<div class="reasons"><h3>${k} <span class="muted">${td.votes[k]||0}명</span></h3>
   ${rs.length?rs.map(r=>`<p>${esc(r.text)} <span class="muted">(${esc(r.by)})</span></p>`).join(''):'<span class="muted">적은 까닭이 아직 없어요.</span>'}</div>`}).join('')}</div></section>
@@ -1163,7 +1312,8 @@ function flowMap(td,present){
 
 const flowLegend=`<div class="flegend"><span><i class="lg"></i>같은 학생의 질문 여정</span><span><i class="lg k"></i>같은 핵심 낱말에서 나온 탐구 질문</span><span><i class="lg b"></i>대질문으로 모이는 질문</span><span>쪽지나 낱말을 누르면 그 흐름만 밝아지고, 대질문 카드를 누르면 학생들의 생각이 모여요</span></div>`;
 const flowTools=present=>`<div class="row ftools">
- ${present?'':'<a class="btn small" href="#flow" data-act="gopresent">발표 모드로 크게 보기</a>'}
+ <button class="btn small show-go" data-act="showopen">▶ 수사판 상영 (오프닝 · 학생 여정 · 전체 흐름)</button>
+ ${present?'':'<a class="btn small" href="#flow" data-act="gopresent">단계별 발표 모드</a>'}
  ${bigOpen(present)?'<button class="btn small" data-act="flowclear">← 질문 흐름으로</button>':'<button class="btn ghost small" data-act="flowbigon">대질문 생각 보기</button>'}
  <button class="btn ghost small" data-act="flowtour">학생 여정 하나씩 ▶</button>
  ${FlowUI.focus?'<button class="btn ghost small" data-act="flowclear">강조 끄기</button>':''}
@@ -1237,7 +1387,7 @@ V.flow=()=>{
 <section class="present-bar t5">
  <div class="row" style="justify-content:space-between;align-items:flex-end">
   <div><span class="label">질문 수사판 · ${td.live?esc(td.name||td.code):'<span class="demo">예시 데이터</span>'}</span><h1>우리 반 질문은 어떻게 이어졌을까?</h1></div>
-  <div class="row"><button class="btn ghost small" data-act="flowfull">전체 화면</button><a class="btn ghost small" href="#teacher">선생님 화면으로</a></div></div>
+  <div class="row"><button class="btn small show-go" data-act="showopen">▶ 상영</button><button class="btn ghost small" data-act="flowfull">전체 화면</button><a class="btn ghost small" href="#teacher">선생님 화면으로</a></div></div>
  <div class="row fsteps">${[1,2,3,4,5].map(i=>`<button class="fdot${i<=s?' done':''}${i===s&&!big?' now':''}" data-act="flowgo" data-v="${i}" aria-label="${i}단계 ${FSTEPS[i].name}"${i===s&&!big?' aria-current="step"':''}><b>${i}</b><span>${FSTEPS[i].name}</span></button>`).join('')}
   <button class="fdot${big?' done now':''}" data-act="flowbigon" aria-label="우리의 생각: 대질문에 대한 학생들의 생각"${big?' aria-current="step"':''}><b>★</b><span>우리의 생각</span></button>
   <span style="flex:1 1 20px"></span><button class="btn small ghost" data-act="flowprev"${s<=1&&!big?' disabled':''}>◀ 이전</button><button class="btn small" data-act="flownext"${big?' disabled':''}>다음 ▶</button></div>
@@ -1246,6 +1396,162 @@ V.flow=()=>{
 <div class="flow-fit" id="flowfit">${flowMap(td,true)}</div>
 ${flowTools(true)}${flowLegend}
 <p class="muted">발표할 때: → 또는 스페이스 = 다음 단계, ← = 이전 단계, Esc = 강조 끄기. 프레젠터 리모컨으로도 넘길 수 있어요.</p>`};
+
+/* ===== 질문 수사판 상영 =====
+   ① 오프닝(약 10초): 물음표 하나가 터져 우리 반 질문들이 별처럼 흩어지고, 숫자가 올라가고, 모두 한 점으로 모여 「질문 수사판」 제목이 찍힌다.
+   ② 학생 질문 여정: 한 학생씩 첫 궁금증 → 핵심 낱말 → 탐구 질문 → 새로운 질문 → 대질문 생각을 크게 꽂고 빨간 끈으로 잇는다.
+   ③ 전체 흐름: 모든 질문을 한 화면에 꽂고 끈과 불빛이 대질문으로 모인다(글자를 읽기보다 흐름을 보여 주는 화면).
+   상영 중에는 자료를 새로 불러와도 화면이 흔들리지 않도록 시작할 때 자료를 한 번 찍어 두고, 앱 화면 밖의 덮개에 따로 그린다.
+   → 스페이스 PageDown 클릭 = 다음, ← PageUp = 이전, Home = 오프닝, End = 전체 흐름, Esc = 닫기. 「동작 줄이기」 기기에서는 움직임 없이 보여 준다. */
+const Theater={on:false,el:null,phase:'',ji:0,auto:true,fs:false,data:null,timers:[],redraw:null};
+const thLater=(ms,f)=>{Theater.timers.push(setTimeout(()=>{if(Theater.on)f()},ms))};
+const thRand=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const TH_KC={n1:'var(--sky)',n2:'var(--peach)',kw:'var(--white)',t:'var(--lemon)',n4:'var(--mint)',big:'var(--lav)'};
+function theaterData(){const td=TD();if(!td)return null;
+ const keepAll=FlowUI.all,keepFocus=FlowUI.focus;FlowUI.all=true;FlowUI.focus=null;const fm=flowModel(td);FlowUI.all=keepAll;FlowUI.focus=keepFocus;
+ const bigBy={};(td.bigs||[]).forEach(b=>{if(b.by)bigBy[b.by]=b});
+ const people={};fm.nodes.forEach(n=>(people[n.by]=people[n.by]||[]).push(n));Object.keys(bigBy).forEach(by=>{people[by]=people[by]||[]});
+ const js=Object.entries(people).map(([by,ns])=>{const pick=k=>ns.filter(n=>n.kind===k),cards=[];
+  pick('n1').slice(0,1).forEach(n=>cards.push({k:'n1',tag:'1차시 · 첫 궁금증',text:n.text}));
+  pick('n2').slice(0,1).forEach(n=>cards.push({k:'n2',tag:'2차시 · 첫 궁금증',text:n.text}));
+  const ts=pick('t').sort((a,b)=>b.likes-a.likes||b.ans-a.ans).slice(0,2);
+  if(ts.length&&ts[0].kw&&ts[0].kw!=='기타')cards.push({k:'kw',tag:'3차시 · 핵심 낱말',text:ts[0].kw});
+  ts.forEach(n=>cards.push({k:'t',tag:'4차시 · 탐구 질문 '+n.t+'유형',text:n.text,likes:n.likes}));
+  pick('n4').slice(0,1).forEach(n=>cards.push({k:'n4',tag:'4차시 · 새로운 질문',text:n.text}));
+  const b=bigBy[by];cards.push(b?{k:'big',tag:'대질문 · '+stanceOf(b.stance).mark+' '+stanceOf(b.stance).v,text:b.text,q:true}:{k:'big',tag:'대질문',text:BIGQ});
+  const steps=cards.filter(c=>c.k!=='kw'&&(c.k!=='big'||c.q)).length,likes=ts.reduce((s,n)=>s+n.likes,0);
+  return {by,cards,steps,likes}}).filter(j=>j.steps>=2)
+  .sort((a,b)=>b.steps-a.steps||b.likes-a.likes||String(a.by).localeCompare(String(b.by),'ko',{numeric:true}));
+ const s=fm.stat,texts=fm.nodes.map(n=>n.text).concat((td.bigs||[]).map(b=>b.text),fm.kw3.slice(0,10).map(k=>k.label)).filter(Boolean);
+ const R=thRand(texts.length+7);for(let i=texts.length-1;i>0;i--){const k=Math.floor(R()*(i+1));[texts[i],texts[k]]=[texts[k],texts[i]]}
+ const stats=[{l:'첫 궁금증',n:s.start},{l:'핵심 낱말',n:s.kw3||s.kw},{l:'탐구 질문',n:s.t},{l:'새로운 질문',n:s.n4},{l:'대질문 생각',n:(td.bigs||[]).length}].filter(x=>x.n>0);
+ return {td,fm,journeys:FlowUI.all?js:js.slice(0,FLIMIT),texts,stats,name:td.live?(td.name||td.code):'우리 반',demo:!td.live}}
+
+function theaterOpen(){if(Theater.on)return;const d=theaterData();if(!d)return;
+ Object.assign(Theater,{on:true,data:d,ji:0,auto:true,phase:''});
+ const el=document.createElement('div');el.className='theater'+(motionOK()?'':' still');el.tabIndex=-1;
+ el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','질문 수사판 상영. 다음은 오른쪽 화살표, 닫기는 Esc');
+ el.innerHTML=`<div class="th-stage" id="th-stage"></div>${d.demo?'<span class="th-tag">예시 데이터</span>':''}<div class="th-bar" id="th-bar"></div>`;
+ document.body.appendChild(el);Theater.el=el;document.body.style.overflow='hidden';el.addEventListener('click',theaterClick);el.focus();
+ Theater.fs=false;try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().then(()=>{Theater.fs=true},()=>{})}catch(e){}
+ theaterGo('open')}
+function theaterClear(){Theater.timers.forEach(clearTimeout);Theater.timers=[];Theater.redraw=null}
+function theaterClose(){if(!Theater.on)return;theaterClear();Theater.on=false;if(Theater.el){Theater.el.remove();Theater.el=null}document.body.style.overflow='';
+ if(Theater.fs&&document.fullscreenElement){try{document.exitFullscreen()}catch(e){}}Theater.fs=false}
+function theaterGo(ph,i){theaterClear();const st=document.getElementById('th-stage');if(!st)return;Theater.phase=ph;if(ph==='jr')Theater.ji=i;theaterBar();
+ const paint=()=>{st.classList.remove('out');
+  st.innerHTML=ph==='open'?thOpening():ph==='jr'?thJourney(Theater.data.journeys[i],i):'<div class="fin" id="fin"></div>';
+  if(ph==='open')thRunOpening(st);else if(ph==='jr')thRunJourney(st);else thRunFinale(st,false)};
+ if(st.innerHTML&&motionOK()){st.classList.add('out');thLater(420,paint)}else paint()}
+function theaterNext(){const n=Theater.data.journeys.length,p=Theater.phase;
+ if(p==='open')n?theaterGo('jr',0):theaterGo('fin');else if(p==='jr')Theater.ji+1<n?theaterGo('jr',Theater.ji+1):theaterGo('fin')}
+function theaterPrev(){const n=Theater.data.journeys.length,p=Theater.phase;
+ if(p==='fin')n?theaterGo('jr',n-1):theaterGo('open');else if(p==='jr'&&Theater.ji>0)theaterGo('jr',Theater.ji-1);else theaterGo('open')}
+function theaterBar(){const b=document.getElementById('th-bar');if(!b)return;const n=Theater.data.journeys.length,p=Theater.phase;
+ b.innerHTML=`<button data-th="open" aria-pressed="${p==='open'}">오프닝</button><button data-th="jr" aria-pressed="${p==='jr'}"${n?'':' disabled'}>학생 여정 ${n}명</button><button data-th="fin" aria-pressed="${p==='fin'}">전체 흐름</button>
+  <span class="sp"></span>${p==='jr'?`<span class="cnt">${Theater.ji+1} / ${n}</span>`:''}<button data-th="prev">◀ 이전</button><button data-th="next"${p==='fin'?' disabled':''}>다음 ▶</button>
+  <button data-th="auto" aria-pressed="${Theater.auto}">자동 넘김</button><button data-th="close">닫기 (Esc)</button>`}
+function theaterClick(e){const b=e.target.closest('[data-th]');
+ if(b){const a=b.dataset.th;
+  if(a==='close')theaterClose();else if(a==='open')theaterGo('open');else if(a==='jr')theaterGo('jr',0);else if(a==='fin')theaterGo('fin');
+  else if(a==='prev')theaterPrev();else if(a==='next')theaterNext();
+  else if(a==='auto'){Theater.auto=!Theater.auto;Theater.el.classList.toggle('paused',!Theater.auto);theaterBar();if(Theater.phase!=='fin')theaterGo(Theater.phase,Theater.ji)} // 지금 장면을 새 설정으로 다시
+  return}
+ if(e.target.closest('.th-bar'))return;theaterNext()}
+window.addEventListener('keydown',e=>{if(!Theater.on||e.isComposing)return;const k=e.key;
+ if((k===' '||k==='Enter')&&e.target.closest&&e.target.closest('.th-bar button'))return; // 단추 위에서는 단추가 처리
+ e.stopPropagation();let f=null;
+ if(k==='ArrowRight'||k==='PageDown'||k===' '||k==='Enter')f=theaterNext;else if(k==='ArrowLeft'||k==='PageUp')f=theaterPrev;
+ else if(k==='Escape')f=theaterClose;else if(k==='Home')f=()=>theaterGo('open');else if(k==='End')f=()=>theaterGo('fin');
+ if(f){e.preventDefault();f()}},true);
+window.addEventListener('resize',()=>{if(Theater.on&&Theater.redraw)Theater.redraw()});
+
+// ① 오프닝
+function thOpening(){const d=Theater.data,R=thRand(11),texts=d.texts.slice(0,46),fill=['?','왜?','어떻게?','만약에?','질문','누가?'];
+ for(let i=0;texts.length<34;i++)texts.push(fill[i%fill.length]);
+ const cols=['#C6E7FF','#FFD6C9','#FFE98A','#C8F1DC','#E1D8FF','#FFF8E8'];
+ const ps=texts.map((t,i)=>{const a=R()*Math.PI*2,r=.3+R()*.62;
+  return `<span class="op-p" style="--x:${(Math.cos(a)*r*48).toFixed(1)}vw;--y:${(Math.sin(a)*r*44).toFixed(1)}vh;--s:${(.6+R()*.95).toFixed(2)};--r:${((R()-.5)*24).toFixed(1)}deg;--o:${(.55+R()*.45).toFixed(2)};--d:${(R()*.5).toFixed(2)}s;--d2:${(R()*.35).toFixed(2)}s;--pc:${cols[i%cols.length]};--fx:${Math.round((R()-.5)*44)}px;--fy:${Math.round((R()-.5)*32)}px;--dr:${(4+R()*4).toFixed(1)}s"><span>${esc(clip(t,18))}</span></span>`}).join('');
+ const st=d.stats.map((s,i)=>(i?`<span class="op-ar" style="--d:${(i*.32+.12).toFixed(2)}s">→</span>`:'')+`<div class="op-st" style="--d:${(i*.32).toFixed(2)}s"><b data-n="${s.n}">0</b><small>${s.l}</small></div>`).join('');
+ return `<div class="op" id="op"><div class="op-spot"></div><div class="op-field">${ps}</div><div class="op-q" aria-hidden="true">?</div>
+  <div class="op-lines"><p class="l1">질문 하나가</p><p class="l2">또 다른 질문을 낳았다</p></div>
+  <div class="op-stats">${st}</div><div class="op-flash"></div>
+  <div class="op-title">${mascot('wow',Math.round(Math.min(innerWidth,innerHeight)*.15))}<span class="op-cls">${esc(d.name)}</span><h1>질문 수사판</h1><p>우리 반 질문은 어떻게 이어졌을까?</p><span class="op-stamp">수사 개시</span></div></div>`}
+function thCount(op){op.querySelectorAll('[data-n]').forEach(b=>{const n=+b.dataset.n,t0=performance.now();
+ (function tick(t){if(!Theater.on||!b.isConnected)return;const p=Math.min(1,(t-t0)/1100);b.textContent=Math.round(n*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(tick)})(t0)})}
+function thRunOpening(st){const op=st.querySelector('#op');if(!op)return;
+ if(!motionOK()){op.classList.add('p-title','p-stamp');if(Theater.auto)thLater(4000,theaterNext);return}
+ [[100,'spot'],[650,'q'],[1900,'burst'],[3000,'dim'],[3000,'l1'],[3800,'l2'],[4700,'stats'],[6700,'converge'],[7300,'title'],[8150,'stamp']]
+  .forEach(([t,c])=>thLater(t,()=>{op.classList.add('p-'+c);if(c==='stats')thCount(op)}));
+ if(Theater.auto)thLater(10600,theaterNext)}
+
+// ② 학생 질문 여정
+function thJourney(j,i){const n=j.cards.length,mo=motionOK(),step=mo?.95:0;
+ const fs=n>=6?'min(2.5vmin,24px)':n>=4?'min(3vmin,29px)':'min(3.6vmin,34px)',total=1.2+n*step+3.8;
+ return `<div class="jr" style="--t:${total.toFixed(1)}s"><header class="jr-h"><span class="jr-no">질문 여정 ${i+1} / ${Theater.data.journeys.length}</span><h2>${esc(fwho(j.by))}</h2><span class="jr-sub">${j.steps}걸음 만에 대질문에 닿은 질문 여정</span></header>
+  <div class="jr-track" style="--n:${n};--fs:${fs}"><svg class="jr-svg" aria-hidden="true"></svg>${j.cards.map((c,k)=>`<div class="jr-c jc-${c.k}" style="--kc:${TH_KC[c.k]};--d:${(.6+k*step).toFixed(2)}s;--rot:${k%2?.8:-.8}deg">
+   <span class="jr-tag">${esc(c.tag)}</span><p>${esc(clip(c.text,c.k==='big'?110:90))}</p>${c.k==='big'&&c.q?`<small>${esc(BIGQ)}</small>`:''}${c.k==='t'&&c.likes?`<span class="jr-like">좋은 질문 도장 ${c.likes}</span>`:''}</div>`).join('')}</div>
+  ${mo&&Theater.auto?'<div class="jr-prog"></div>':''}</div>`}
+function thRunJourney(st){const tr=st.querySelector('.jr-track'),svg=st.querySelector('.jr-svg');if(!tr||!svg)return;
+ const mo=motionOK(),step=mo?.95:0,cs=[...tr.querySelectorAll('.jr-c')];
+ const draw=again=>{if(again)st.querySelector('.jr').classList.add('still');
+  const W=tr.clientWidth,H=tr.clientHeight;svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.setAttribute('width',W);svg.setAttribute('height',H);
+  const pos=c=>({l:c.offsetLeft,r:c.offsetLeft+c.offsetWidth,cy:c.offsetTop+c.offsetHeight/2});let out='',path='';
+  for(let k=0;k+1<cs.length;k++){const a=pos(cs[k]),b=pos(cs[k+1]),dx=Math.max(20,(b.l-a.r)*.6),dl=(.6+(k+1)*step-.35).toFixed(2);
+   const seg=`C${a.r+dx} ${a.cy} ${b.l-dx} ${b.cy} ${b.l} ${b.cy}`;path+=(k?` L${a.r} ${a.cy} `:`M${a.r} ${a.cy} `)+seg;
+   out+=`<path class="jr-str" pathLength="1" style="--d:${dl}s" d="M${a.r} ${a.cy}${seg}"/><circle class="jr-pin" style="--d:${dl}s" cx="${a.r}" cy="${a.cy}" r="6"/><circle class="jr-pin" style="--d:${(+dl+.7).toFixed(2)}s" cx="${b.l}" cy="${b.cy}" r="6"/>`}
+  if(mo&&cs.length>1)out+=`<g class="jr-spark" opacity="0"><circle r="18" fill="rgba(255,233,138,.22)"/><circle r="8" fill="#FFE98A"/><animateMotion dur="${(.9*(cs.length-1)+.4).toFixed(1)}s" repeatCount="indefinite" begin="indefinite" path="${path}"/></g>`;
+  svg.innerHTML=out;const g=svg.querySelector('.jr-spark');
+  if(g){const go=()=>{if(!g.isConnected)return;g.setAttribute('opacity','1');try{g.querySelector('animateMotion').beginElement()}catch(e){}};again?go():thLater((.6+cs.length*step+.2)*1000,go)}};
+ requestAnimationFrame(()=>draw(false));Theater.redraw=()=>draw(true);
+ if(Theater.auto)thLater((1.2+cs.length*step+3.8)*1000,theaterNext)}
+
+// ③ 전체 흐름: 칸(첫 궁금증 · 핵심 낱말 · 탐구 질문 · 새로운 질문 · 대질문)에 모든 질문을 꽂고 끈으로 잇는다. 많으면 한 칸을 여러 줄로 나눈다.
+function thRunFinale(st,again){const box=st.querySelector('#fin');if(!box)return;const d=Theater.data,fm=d.fm,mo=motionOK()&&!again;
+ if(again)box.classList.add('still');
+ const W=box.clientWidth,H=box.clientHeight,top=H*.2,bot=H*.07,avail=H-top-bot,colX=[.05,.24,.425,.62],cw=W*.155,P={};
+ const rk=(a,b)=>(fm.rank[a.by]-fm.rank[b.by])||(FORDER[a.kind]-FORDER[b.kind]);
+ const c1=fm.nodes.filter(n=>n.kind==='n1'||n.kind==='n2').sort(rk),c4=fm.nodes.filter(n=>n.kind==='n4').sort(rk);
+ const c3=fm.nodes.filter(n=>n.kind==='t').sort((a,b)=>fm.kws.indexOf(a.kw)-fm.kws.indexOf(b.kw)||rk(a,b));
+ const place=(list,ci)=>{const n=list.length;if(!n)return;const k=n>48?3:n>20?2:1,m=Math.ceil(n/k),g=Math.max(2,Math.min(12,avail/m*.2)),h=Math.min(64,(avail-g*(m-1))/m),w=(cw-(k-1)*6)/k,y0=top+(avail-(m*h+(m-1)*g))/2;
+  list.forEach((x,i)=>{const c=Math.floor(i/m),r=i%m;P[x.id]={x:W*colX[ci]+c*(w+6),y:y0+r*(h+g),w,h}})};
+ place(c1,0);place(c3,2);place(c4,3);
+ const hubs=fm.kws.length?fm.kws.map(k=>({id:'h_'+k,label:k})):fm.kw3.slice(0,10).map(k=>({id:'h3_'+k.key,label:k.label}));
+ const hh=Math.max(24,Math.min(50,avail/Math.max(1,hubs.length)*.6)),hw=cw*.9;
+ hubs.forEach((h,i)=>{const ts=c3.filter(n=>'h_'+n.kw===h.id).map(n=>P[n.id]).filter(Boolean);
+  P[h.id]={x:W*colX[1],y:ts.length?ts.reduce((s,p)=>s+p.y+p.h/2,0)/ts.length-hh/2:top+(i+.5)*avail/hubs.length-hh/2,w:hw,h:hh}});
+ const hs=hubs.map(h=>P[h.id]).sort((a,b)=>a.y-b.y);for(let i=1;i<hs.length;i++)hs[i].y=Math.max(hs[i].y,hs[i-1].y+hh+8); // 겹치지 않게 아래로 밀고
+ const over=hs.length?hs[hs.length-1].y+hh-(H-bot):0;if(over>0)hs.forEach(p=>p.y=Math.max(top,p.y-over));                   // 넘치면 위로 당긴다
+ const bw=W*.2,bh=Math.min(H*.46,360);P.big={x:W*.775,y:top+avail/2-bh/2,w:bw,h:bh};
+ // 끈: 학생 여정(j) · 낱말→탐구 질문(k) · 새로운 질문→대질문(b). 새로운 질문이 없는 학생도 마지막 질문에서 대질문으로 잇는다.
+ const edges=fm.edges.filter(e=>P[e.a]&&P[e.b]).map(e=>({...e}));
+ const per={};fm.nodes.forEach(n=>(per[n.by]=per[n.by]||[]).push(n));
+ Object.values(per).forEach(ns=>{if(ns.some(n=>n.kind==='n4'))return;const last=ns.slice().sort((a,b)=>FORDER[b.kind]-FORDER[a.kind])[0];if(last&&P[last.id])edges.push({a:last.id,b:'big',k:'b'})});
+ const colOf=id=>id==='big'?4:id.startsWith('h')?1:({n1:0,n2:0,t:2,n4:3})[(fm.nodes.find(n=>n.id===id)||{}).kind]||0;
+ const CD=[0,.9,1.6,2.3,3.1],dl=(ci,i,n)=>mo?(CD[ci]+Math.min(.8,i*.8/Math.max(1,n))).toFixed(2):'0';
+ const geo=(a,b)=>{if(Math.abs(a.x-b.x)<2){const x=a.x-26;return `M${a.x} ${a.y+a.h/2}C${x} ${a.y+a.h/2} ${x} ${b.y+b.h/2} ${b.x} ${b.y+b.h/2}`} // 같은 칸
+  const x1=a.x+a.w,y1=a.y+a.h/2,x2=b.x,y2=b.y+b.h/2,dx=Math.max(24,(x2-x1)*.5);return `M${x1} ${y1}C${x1+dx} ${y1} ${x2-dx} ${y2} ${x2} ${y2}`};
+ const svgE=edges.map((e,i)=>`<path class="fin-e ${e.k}" pathLength="1" style="--d:${mo?(CD[colOf(e.a)]+.7+(i%9)*.05).toFixed(2):0}s" d="${geo(P[e.a],P[e.b])}"/>`).join('');
+ const note=(n,ci,i,len)=>{const p=P[n.id],f=Math.max(6,Math.min(15,p.h*.36));return `<div class="fin-n" style="left:${p.x.toFixed(1)}px;top:${p.y.toFixed(1)}px;width:${p.w.toFixed(1)}px;height:${p.h.toFixed(1)}px;--kc:${TH_KC[n.kind==='n2'?'n2':n.kind]};--d:${dl(ci,i,len)}s;font-size:${f.toFixed(1)}px">${esc(clip(n.text,70))}</div>`};
+ const notes=c1.map((n,i)=>note(n,0,i,c1.length)).join('')+c3.map((n,i)=>note(n,2,i,c3.length)).join('')+c4.map((n,i)=>note(n,3,i,c4.length)).join('')+
+  hubs.map((h,i)=>{const p=P[h.id];return `<div class="fin-n fhub" style="left:${p.x.toFixed(1)}px;top:${p.y.toFixed(1)}px;width:${p.w.toFixed(1)}px;height:${p.h.toFixed(1)}px;--kc:var(--white);--d:${dl(1,i,hubs.length)}s;font-size:${Math.max(10,Math.min(20,hh*.42)).toFixed(1)}px">${esc(clip(h.label,12))}</div>`}).join('');
+ const sc=STANCES.map(x=>x.mark+' '+(d.td.bigs||[]).filter(a=>a.stance===x.v).length).join('  '),B=P.big;
+ const heads=[['첫 궁금증',0],['핵심 낱말',1],['탐구 질문',2],['새로운 질문',3]].map(([t,ci],i)=>`<div class="fin-head" style="left:${(W*colX[ci]+cw/2).toFixed(0)}px;top:${(top-34).toFixed(0)}px;--d:${mo?(CD[ci]).toFixed(2):0}s">${t}</div>`).join('')+
+  `<div class="fin-head" style="left:${(B.x+B.w/2).toFixed(0)}px;top:${(top-34).toFixed(0)}px;--d:${mo?CD[4]:0}s">대질문</div>`;
+ const total=c1.length+c3.length+c4.length,ppl=Object.keys(per).length;
+ box.innerHTML=`<div class="fin-zoom"><svg class="fin-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">${svgE}<g id="fin-sparks"></g></svg>${notes}${heads}
+  <div class="fin-big" style="left:${B.x.toFixed(1)}px;top:${B.y.toFixed(1)}px;width:${B.w.toFixed(1)}px;height:${B.h.toFixed(1)}px;--d:${mo?CD[4]:0}s"><span class="label">대질문</span><b>${BIGQ}</b>${(d.td.bigs||[]).length?`<small>우리의 생각 ${sc}</small>`:''}</div></div>
+  <div class="fin-cap" style="--d:${mo?3.6:0}s"><h2>질문 ${total}개, 하나의 흐름</h2><p>${esc(d.name)} · ${ppl}명의 질문이 대질문으로 모였어요</p></div>`;
+ Theater.redraw=()=>thRunFinale(st,true);
+ if(!motionOK())return;
+ // 불빛: 학생마다 첫 질문에서 대질문까지 끈을 따라 흐른다(최대 40개)
+ const paths=Object.values(per).map(ns=>{const ids=[1,2,3,4].map(o=>ns.find(n=>FORDER[n.kind]===o)).filter(n=>n&&P[n.id]).map(n=>n.id);
+  const t=ns.find(n=>n.kind==='t');if(t&&P['h_'+t.kw]){const at=ids.indexOf(t.id);if(at>=0)ids.splice(at,0,'h_'+t.kw)}
+  ids.push('big');return ids}).filter(ids=>ids.length>=2).slice(0,40);
+ const R=thRand(paths.length+3),g=box.querySelector('#fin-sparks');
+ g.innerHTML=paths.map(ids=>{let p='';for(let i=0;i+1<ids.length;i++){const s=geo(P[ids[i]],P[ids[i+1]]);p+=i?' L'+s.slice(1).split('C')[0]+' C'+s.split('C')[1]:s}
+  return `<circle class="fin-spark" r="${(3+R()*2.5).toFixed(1)}" opacity="0"><animateMotion dur="${(2.6+R()*1.8).toFixed(1)}s" repeatCount="indefinite" begin="indefinite" path="${p}"/></circle>`}).join('');
+ thLater(again?0:4200,()=>g.querySelectorAll('circle').forEach((c,i)=>{const a=c.querySelector('animateMotion');setTimeout(()=>{if(!c.isConnected)return;c.setAttribute('opacity','.95');try{a.beginElement()}catch(e){}},i*140+R()*900)}))}
 
 async function fillQR(){const el=document.getElementById('qr');if(!el||!Teacher.data)return;
  try{if(!window.qrcode)await loadScript(QR_JS);const q=qrcode(0,'M');q.addData(joinUrl(Teacher.data.summary.code));q.make();
@@ -1293,6 +1599,9 @@ const A={
  m3check(){S.m3.checked=true;S.m3.ever=true},
  m3clear(){S.m3.words=[];S.m3.sents={};S.m3.checked=false},
  m3conn(d){S.m3.sum=(S.m3.sum?S.m3.sum.replace(/\s*$/,' '):'')+d.v+' '},
+ m3ex(){if(!M3UI.ex&&!String(S.m3.sum||'').trim()){M3UI.msg='먼저 중심 문장을 접속어로 이어 써 보고 눌러요.';return}M3UI.msg='';M3UI.ex=!M3UI.ex},
+ tex(){TUI.ex=!TUI.ex},
+ showopen(){theaterOpen();return 'keep'},
  m4sort(d){S.m4.sort[d.s]=d.v},
  m4kw(d){S.m4.kw=d.v},
  m4post(){if([1,2,3,4].some(t=>S.m4.q[t].trim()))S.m4.posted=true},
